@@ -25,6 +25,9 @@ import {
   IdentificationResult,
 } from '../../lib/wild';
 
+// Set to false right before live demo presentation to hide bypass tools
+const SHOW_DEV_TOOLS = true;
+
 export const WildScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -81,7 +84,7 @@ export const WildScreen: React.FC = () => {
   // Launch Camera or Gallery Picker
   const handleLaunchCamera = async () => {
     // 3.1 GPS Boundary check
-    const isInside = gpsMetadata?.inside_boundary || bypassGps;
+    const isInside = gpsMetadata?.inside_boundary || (SHOW_DEV_TOOLS && bypassGps);
     if (!isInside) {
       Alert.alert(
         'Outside Pilot Territory',
@@ -117,7 +120,7 @@ export const WildScreen: React.FC = () => {
   };
 
   const handleLaunchGallery = async () => {
-    const isInside = gpsMetadata?.inside_boundary || bypassGps;
+    const isInside = gpsMetadata?.inside_boundary || (SHOW_DEV_TOOLS && bypassGps);
     if (!isInside) {
       Alert.alert(
         'Outside Pilot Territory',
@@ -185,7 +188,7 @@ export const WildScreen: React.FC = () => {
     return '#10B981'; // Common Green
   };
 
-  const isInside = gpsMetadata?.inside_boundary || bypassGps;
+  const isInside = gpsMetadata?.inside_boundary || (SHOW_DEV_TOOLS && bypassGps);
   const dailyMissionComplete = observations.length > 0;
   const weeklyMissionCount = Math.min(3, observations.length);
 
@@ -227,7 +230,7 @@ export const WildScreen: React.FC = () => {
             </View>
           </View>
 
-          {__DEV__ && (
+          {SHOW_DEV_TOOLS && (
             <View style={styles.switchRow}>
               <Text style={styles.switchLabel}>Bypass GPS Test Mode (DEV Only)</Text>
               <Switch
