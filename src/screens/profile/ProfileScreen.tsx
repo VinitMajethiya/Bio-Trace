@@ -1,56 +1,77 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../providers/ThemeProvider';
+import { useAuth } from '../../context/AuthContext';
+import { BioHeader } from '../../components/common/BioHeader';
+import { BioCard } from '../../components/common/BioCard';
+import { StatusBadge } from '../../components/common/StatusBadge';
+import { PrimaryButton } from '../../components/common/PrimaryButton';
+import { SecondaryButton } from '../../components/common/SecondaryButton';
 
 export const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
+  const { colors, radii } = useTheme();
   const { user, signOut } = useAuth();
 
+  const userInitial = user?.email?.charAt(0).toUpperCase() || 'E';
+  const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Eco Explorer';
+
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 16) }]}>
-      <View style={styles.header}>
-        <Ionicons name="person-circle" size={24} color="#10B981" />
-        <Text style={styles.headerTitle}>User Profile</Text>
-      </View>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: Math.max(insets.top, 8) }]}>
+      <BioHeader title="BioVerse" />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user?.email?.charAt(0).toUpperCase() || 'E'}
-            </Text>
+        {/* User Card */}
+        <BioCard variant="elevated" padding={20} style={styles.profileCard}>
+          <View style={[styles.avatarCircle, { backgroundColor: colors.primarySubtle }]}>
+            <Text style={[styles.avatarText, { color: colors.primaryDark }]}>{userInitial}</Text>
           </View>
-          <Text style={styles.displayName}>
-            {user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Eco Explorer'}
-          </Text>
-          <Text style={styles.emailText}>{user?.email || 'explorer@ecoquest.demo'}</Text>
+          <Text style={[styles.displayName, { color: colors.textPrimary }]}>{displayName}</Text>
+          <Text style={[styles.emailText, { color: colors.textSecondary }]}>{user?.email || 'explorer@ecoquest.demo'}</Text>
           
-          <View style={styles.trustBadge}>
-            <Ionicons name="shield-checkmark" size={16} color="#10B981" />
-            <Text style={styles.trustText}>Trust Score: 100 (Tier 0 Verified)</Text>
-          </View>
-        </View>
+          <StatusBadge label="Trust Score: 100 (Tier 0 Verified)" variant="success" icon="shield-checkmark" style={styles.trustBadge} />
+        </BioCard>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Session Info</Text>
+        {/* GreenPoints & Wallet Access Widget */}
+        <BioCard variant="elevated" padding={18} style={[styles.walletWidgetCard, { backgroundColor: colors.primarySubtle }]}>
+          <View style={styles.walletWidgetHeader}>
+            <View style={[styles.walletIconBg, { backgroundColor: colors.primary }]}>
+              <Ionicons name="wallet" size={20} color={colors.textInverse} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.walletWidgetTitle, { color: colors.primaryDark }]}>GreenPoints & Wallet</Text>
+              <Text style={[styles.walletWidgetSub, { color: colors.textSecondary }]}>Track earnings, XP, & unified activity log</Text>
+            </View>
+          </View>
+
+          <PrimaryButton
+            title="View GreenPoints & Activity Wallet"
+            icon="receipt-outline"
+            onPress={() => navigation.navigate('Wallet')}
+            style={styles.walletBtn}
+          />
+        </BioCard>
+
+        {/* Session Info */}
+        <BioCard variant="outlined" padding={18} style={styles.infoCard}>
+          <Text style={[styles.infoTitle, { color: colors.textPrimary }]}>Session Information</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>User ID:</Text>
-            <Text style={styles.infoVal} numberOfLines={1} ellipsizeMode="middle">
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>User ID:</Text>
+            <Text style={[styles.infoVal, { color: colors.textPrimary }]} numberOfLines={1} ellipsizeMode="middle">
               {user?.id || 'demo-user-id'}
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Auth Provider:</Text>
-            <Text style={styles.infoVal}>Supabase Auth</Text>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Auth Provider:</Text>
+            <Text style={[styles.infoVal, { color: colors.textPrimary }]}>Supabase Auth</Text>
           </View>
-        </View>
+        </BioCard>
 
-        <TouchableOpacity style={styles.signOutBtn} onPress={signOut}>
-          <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        <SecondaryButton title="Sign Out" icon="log-out-outline" onPress={signOut} style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }} textStyle={{ color: colors.textDanger }} />
       </ScrollView>
     </View>
   );
@@ -59,116 +80,83 @@ export const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#07120E',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#132A20',
-    gap: 8,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#ECFDF5',
   },
   content: {
-    padding: 20,
+    padding: 16,
     gap: 16,
+    paddingBottom: 80,
   },
   profileCard: {
-    backgroundColor: '#0F241C',
-    borderRadius: 20,
-    padding: 24,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#19392B',
   },
-  avatar: {
+  avatarCircle: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#10B981',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   avatarText: {
-    color: '#042F2E',
     fontSize: 32,
     fontWeight: '800',
   },
   displayName: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#F0FDF4',
+    fontWeight: '800',
   },
   emailText: {
     fontSize: 13,
-    color: '#9CA3AF',
     marginTop: 2,
   },
   trustBadge: {
+    marginTop: 14,
+  },
+  walletWidgetCard: {
+    gap: 14,
+    borderColor: 'rgba(5, 150, 105, 0.25)',
+  },
+  walletWidgetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginTop: 16,
-    gap: 6,
+    gap: 12,
   },
-  trustText: {
-    color: '#6EE7B7',
+  walletIconBg: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  walletWidgetTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  walletWidgetSub: {
     fontSize: 12,
-    fontWeight: '600',
+    marginTop: 2,
+  },
+  walletBtn: {
+    height: 44,
   },
   infoCard: {
-    backgroundColor: '#0F241C',
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#19392B',
+    gap: 12,
   },
   infoTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#E5E7EB',
-    marginBottom: 12,
+    marginBottom: 4,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
   },
   infoLabel: {
-    color: '#9CA3AF',
     fontSize: 13,
   },
   infoVal: {
-    color: '#D1D5DB',
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     maxWidth: '60%',
-  },
-  signOutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    borderRadius: 14,
-    height: 48,
-    marginTop: 8,
-    gap: 8,
-  },
-  signOutText: {
-    color: '#EF4444',
-    fontSize: 15,
-    fontWeight: '700',
   },
 });

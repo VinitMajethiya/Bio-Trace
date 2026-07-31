@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../providers/ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
+import { BioCard } from '../../components/common/BioCard';
+import { EmptyState } from '../../components/common/EmptyState';
 import { fetchUserLedgerBalance, UserLedgerSummary } from '../../lib/ledger';
 
 export const WalletScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
+  const { colors, radii } = useTheme();
   const { user } = useAuth();
   const [summary, setSummary] = useState<UserLedgerSummary>({
     total_gp: 0,
@@ -35,89 +41,86 @@ export const WalletScreen: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 16) }]}>
-      <View style={styles.header}>
-        <Ionicons name="wallet" size={24} color="#F59E0B" />
-        <Text style={styles.headerTitle}>GreenPoints & Wallet</Text>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: Math.max(insets.top, 12) }]}>
+      {/* Header with Back Arrow */}
+      <View style={[styles.header, { borderBottomColor: colors.surfaceBorder }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Ionicons name="wallet" size={22} color={colors.accentGold} />
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>GreenPoints & Wallet</Text>
       </View>
 
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#10B981" />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>TOTAL GREENPOINTS</Text>
-          <Text style={styles.balanceVal}>
+        {/* Balance Card */}
+        <BioCard variant="elevated" padding={20} style={[styles.balanceCard, { backgroundColor: colors.primarySubtle }]}>
+          <Text style={[styles.balanceLabel, { color: colors.primaryDark }]}>TOTAL GREENPOINTS</Text>
+          <Text style={[styles.balanceVal, { color: colors.primaryDark }]}>
             {loading ? '...' : `${summary.total_gp.toLocaleString()} GP`}
           </Text>
 
           <View style={styles.splitRow}>
-            <View style={styles.splitBox}>
-              <Ionicons name="leaf" size={16} color="#34D399" />
-              <Text style={styles.splitText}>
+            <View style={[styles.splitBox, { backgroundColor: colors.surface, borderRadius: radii.lg }]}>
+              <Ionicons name="leaf" size={16} color={colors.primary} />
+              <Text style={[styles.splitText, { color: colors.textPrimary }]}>
                 {loading ? '...' : `${summary.wild_xp} Wild XP`}
               </Text>
             </View>
-            <View style={styles.splitBox}>
-              <Ionicons name="cash" size={16} color="#60A5FA" />
-              <Text style={styles.splitText}>
-                {loading ? '...' : `${summary.circular_payout} Circular Cash`}
+
+            <View style={[styles.splitBox, { backgroundColor: colors.surface, borderRadius: radii.lg }]}>
+              <Ionicons name="cash" size={16} color={colors.accentBlue} />
+              <Text style={[styles.splitText, { color: colors.textPrimary }]}>
+                {loading ? '...' : `₹${summary.circular_payout} Circular Cash`}
               </Text>
             </View>
           </View>
-        </View>
+        </BioCard>
 
+        {/* Unified Ledger Activity */}
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Unified Ledger Activity</Text>
-          <Text style={styles.sectionSub}>Live from Supabase</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Unified Ledger Activity</Text>
+          <Text style={[styles.sectionSub, { color: colors.primary }]}>Live Sync</Text>
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#10B981" style={{ marginTop: 20 }} />
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
         ) : summary.entries.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="receipt-outline" size={42} color="#374151" />
-            <Text style={styles.emptyStateTitle}>No Transactions Yet</Text>
-            <Text style={styles.emptyStateSub}>
-              Log species sightings in Wild or recycled items in Circular to earn GreenPoints!
-            </Text>
-          </View>
+          <EmptyState
+            icon="receipt-outline"
+            title="No Transactions Yet"
+            description="Log species sightings in Wild or recycled items in Circular to earn GreenPoints!"
+          />
         ) : (
           <View style={styles.ledgerList}>
             {summary.entries.map((item, index) => {
               const isWild = item.source === 'wild_xp';
               return (
-                <View key={item.id || index.toString()} style={styles.ledgerItem}>
+                <BioCard key={item.id || index.toString()} variant="outlined" padding={12} style={styles.ledgerItem}>
                   <View
                     style={[
                       styles.ledgerIcon,
-                      {
-                        backgroundColor: isWild
-                          ? 'rgba(52, 211, 153, 0.15)'
-                          : 'rgba(96, 165, 250, 0.15)',
-                      },
+                      { backgroundColor: isWild ? colors.primarySubtle : colors.accentBlueSubtle },
                     ]}
                   >
                     <Ionicons
                       name={isWild ? 'leaf' : 'sync-circle'}
                       size={20}
-                      color={isWild ? '#34D399' : '#60A5FA'}
+                      color={isWild ? colors.primary : colors.accentBlue}
                     />
                   </View>
                   <View style={styles.ledgerInfo}>
-                    <Text style={styles.ledgerTitle}>
+                    <Text style={[styles.ledgerTitle, { color: colors.textPrimary }]}>
                       {isWild ? 'Species Observation Reward' : 'Waste Recycled Reward'}
                     </Text>
-                    <Text style={styles.ledgerSub}>
-                      {item.created_at
-                        ? new Date(item.created_at).toLocaleDateString()
-                        : 'Recent Transaction'}
+                    <Text style={[styles.ledgerSub, { color: colors.textSecondary }]}>
+                      {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recent'}
                     </Text>
                   </View>
-                  <Text style={styles.ledgerAmount}>+{item.amount} GP</Text>
-                </View>
+                  <Text style={[styles.ledgerAmount, { color: colors.primaryDark }]}>+{item.amount} GP</Text>
+                </BioCard>
               );
             })}
           </View>
@@ -130,78 +133,67 @@ export const WalletScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#07120E',
   },
   header: {
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#132A20',
-    gap: 8,
+    gap: 10,
+  },
+  backBtn: {
+    padding: 4,
+    marginRight: 4,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '800',
-    color: '#ECFDF5',
   },
   content: {
-    padding: 20,
-    gap: 18,
+    padding: 16,
+    gap: 16,
+    paddingBottom: 40,
   },
   balanceCard: {
-    backgroundColor: '#271B07',
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: '#45300B',
+    gap: 6,
   },
   balanceLabel: {
-    color: '#FBBF24',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   balanceVal: {
     fontSize: 34,
     fontWeight: '800',
-    color: '#FEF3C7',
-    marginTop: 6,
   },
   splitRow: {
     flexDirection: 'row',
-    marginTop: 18,
-    gap: 12,
+    marginTop: 10,
+    gap: 10,
   },
   splitBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
     gap: 6,
   },
   splitText: {
-    color: '#FDE68A',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginTop: 8,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#E5E7EB',
   },
   sectionSub: {
     fontSize: 12,
-    color: '#10B981',
     fontWeight: '600',
   },
   ledgerList: {
@@ -210,11 +202,6 @@ const styles = StyleSheet.create({
   ledgerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0F241C',
-    padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#19392B',
   },
   ledgerIcon: {
     width: 38,
@@ -228,39 +215,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   ledgerTitle: {
-    color: '#F3F4F6',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   ledgerSub: {
-    color: '#9CA3AF',
     fontSize: 12,
     marginTop: 2,
   },
   ledgerAmount: {
-    color: '#34D399',
     fontSize: 14,
-    fontWeight: '700',
-  },
-  emptyState: {
-    backgroundColor: '#0F241C',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#19392B',
-  },
-  emptyStateTitle: {
-    color: '#D1D5DB',
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 12,
-  },
-  emptyStateSub: {
-    color: '#9CA3AF',
-    fontSize: 13,
-    textAlign: 'center',
-    marginTop: 4,
-    lineHeight: 18,
+    fontWeight: '800',
   },
 });
