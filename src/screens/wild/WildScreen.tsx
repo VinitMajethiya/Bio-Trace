@@ -227,15 +227,17 @@ export const WildScreen: React.FC = () => {
             </View>
           </View>
 
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Bypass GPS Test Mode</Text>
-            <Switch
-              value={bypassGps}
-              onValueChange={setBypassGps}
-              trackColor={{ false: '#374151', true: 'rgba(16, 185, 129, 0.4)' }}
-              thumbColor={bypassGps ? '#10B981' : '#9CA3AF'}
-            />
-          </View>
+          {__DEV__ && (
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>Bypass GPS Test Mode (DEV Only)</Text>
+              <Switch
+                value={bypassGps}
+                onValueChange={setBypassGps}
+                trackColor={{ false: '#374151', true: 'rgba(16, 185, 129, 0.4)' }}
+                thumbColor={bypassGps ? '#10B981' : '#9CA3AF'}
+              />
+            </View>
+          )}
         </View>
 
         {/* Species Sighting Action Card */}
@@ -391,9 +393,18 @@ export const WildScreen: React.FC = () => {
                   </View>
                 </View>
 
+                {aiResult.is_uncertain && (
+                  <View style={styles.uncertainBanner}>
+                    <Ionicons name="alert-circle" size={18} color="#F59E0B" />
+                    <Text style={styles.uncertainText}>
+                      Confidence &lt; 60% — Flagged for Community Review
+                    </Text>
+                  </View>
+                )}
+
                 <View style={styles.metaRow}>
                   <View style={styles.metaBadge}>
-                    <Ionicons name="checkmark-circle-outline" size={16} color="#10B981" />
+                    <Ionicons name="checkmark-circle-outline" size={16} color={aiResult.is_uncertain ? '#F59E0B' : '#10B981'} />
                     <Text style={styles.metaText}>{aiResult.confidence}% AI Match</Text>
                   </View>
                   <View style={styles.metaBadge}>
@@ -746,5 +757,21 @@ const styles = StyleSheet.create({
     color: '#042F2E',
     fontSize: 15,
     fontWeight: '800',
+  },
+  uncertainBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 10,
+    gap: 8,
+  },
+  uncertainText: {
+    color: '#FBBF24',
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
   },
 });
