@@ -83,25 +83,68 @@ export const WildScreen: React.FC = () => {
 
   // Launch Camera or Gallery Picker
   const handleLaunchCamera = async () => {
-    // 3.1 GPS Boundary check
+    console.log('[WildScreen] Log Sighting button tapped (handleLaunchCamera)');
     const isInside = gpsMetadata?.inside_boundary || (SHOW_DEV_TOOLS && bypassGps);
+    console.log('[WildScreen] Location check — inside_boundary:', gpsMetadata?.inside_boundary, 'bypassGps:', bypassGps, 'isInside:', isInside);
+
     if (!isInside) {
+      console.log('[WildScreen] Blocked by GPS boundary check');
       Alert.alert(
         'Outside Pilot Territory',
-        'Species sightings must be logged within the SGU Campus Pilot Zone. Enable "Bypass GPS for Testing" below if you are testing off-campus.',
+        'Species sightings must be logged within the SGU Campus Pilot Zone. Enable "Bypass GPS Test Mode (DEV Only)" above to test off-campus.',
         [{ text: 'OK' }]
       );
       return;
     }
 
     try {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('Camera Permission Required', 'Please grant camera access to capture species photos.');
+      console.log('[WildScreen] Requesting camera permissions...');
+      const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+      console.log('[WildScreen] Camera permission result:', cameraPerm.status);
+
+      if (!cameraPerm.granted) {
+        Alert.alert('Camera Permission Required', 'Please grant camera access in your device settings to snap species photos.');
         return;
       }
 
+      console.log('[WildScreen] Launching camera...');
       const pickerResult = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        base64: true,
+      });
+      console.log('[WildScreen] Camera result canceled?:', pickerResult.canceled);
+
+      if (!pickerResult.canceled && pickerResult.assets.length > 0) {
+        const photo = pickerResult.assets[0];
+        setCapturedPhoto(photo.uri);
+        setModalVisible(true);
+        processAiIdentification(photo.base64 || photo.uri);
+      }
+    } catch (err) {
+      console.warn('[WildScreen] Failed to launch camera, falling back to gallery picker:', err);
+      handleLaunchGallery();
+    }
+  };
+
+  const handleLaunchGallery = async () => {
+    console.log('[WildScreen] handleLaunchGallery triggered');
+    const isInside = gpsMetadata?.inside_boundary || (SHOW_DEV_TOOLS && bypassGps);
+
+    if (!isInside) {
+      Alert.alert(
+        'Outside Pilot Territory',
+        'Species sightings must be logged within the SGU Campus Pilot Zone. Enable "Bypass GPS Test Mode (DEV Only)" above to test off-campus.'
+      );
+      return;
+    }
+
+    try {
+      console.log('[WildScreen] Requesting media library permissions...');
+      const libPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      console.log('[WildScreen] Media library permission status:', libPerm.status);
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.8,
         base64: true,
@@ -114,32 +157,8 @@ export const WildScreen: React.FC = () => {
         processAiIdentification(photo.base64 || photo.uri);
       }
     } catch (err) {
-      console.warn('Failed to launch camera, falling back to photo library:', err);
-      handleLaunchGallery();
-    }
-  };
-
-  const handleLaunchGallery = async () => {
-    const isInside = gpsMetadata?.inside_boundary || (SHOW_DEV_TOOLS && bypassGps);
-    if (!isInside) {
-      Alert.alert(
-        'Outside Pilot Territory',
-        'Species sightings must be logged within the SGU Campus Pilot Zone. Enable "Bypass GPS for Testing" below if you are testing off-campus.'
-      );
-      return;
-    }
-
-    const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      base64: true,
-    });
-
-    if (!pickerResult.canceled && pickerResult.assets.length > 0) {
-      const photo = pickerResult.assets[0];
-      setCapturedPhoto(photo.uri);
-      setModalVisible(true);
-      processAiIdentification(photo.base64 || photo.uri);
+      console.error('[WildScreen] Gallery launch error:', err);
+      Alert.alert('Image Selection Error', 'Could not open image gallery on device.');
     }
   };
 

@@ -9,7 +9,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "EcoQuest needs your location to verify biodiversity sightings and waste drop-offs in your pilot territory."
+        "NSLocationWhenInUseUsageDescription": "EcoQuest needs your location to verify biodiversity sightings and waste drop-offs in your pilot territory.",
+        "NSCameraUsageDescription": "EcoQuest needs camera access to capture species sightings and waste items.",
+        "NSPhotoLibraryUsageDescription": "EcoQuest needs photo library access to select species photos for identification."
       }
     },
     "android": {
@@ -21,14 +23,30 @@
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
       ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "EcoQuest needs camera access to capture species sightings and waste items."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "EcoQuest needs photo library access to select species photos for identification.",
+          "cameraPermission": "EcoQuest needs camera access to capture species photos."
+        }
+      ]
     ]
   }
 }
