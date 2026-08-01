@@ -1,7 +1,7 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../providers/ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
@@ -10,12 +10,39 @@ import { BioCard } from '../../components/common/BioCard';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { PrimaryButton } from '../../components/common/PrimaryButton';
 import { SecondaryButton } from '../../components/common/SecondaryButton';
+import { fetchUserProgression, PlayerProgression } from '../../lib/progression';
 
 export const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { colors, radii } = useTheme();
   const { user, signOut } = useAuth();
+  const [progression, setProgression] = useState<PlayerProgression>({
+    totalGP: 0,
+    level: 1,
+    currentLevelXP: 0,
+    xpToNextLevel: 100,
+    progressPercent: 0,
+    title: 'Eco Novice',
+    wildXP: 0,
+    circularGP: 0,
+  });
+
+  const loadProgression = async () => {
+    if (!user) return;
+    const prog = await fetchUserProgression(user.id);
+    setProgression(prog);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadProgression();
+    }, [user])
+  );
+
+  useEffect(() => {
+    loadProgression();
+  }, [user]);
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || 'E';
   const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Eco Explorer';
@@ -35,6 +62,68 @@ export const ProfileScreen: React.FC = () => {
           
           <StatusBadge label="Trust Score: 100 (Tier 0 Verified)" variant="success" icon="shield-checkmark" style={styles.trustBadge} />
         </BioCard>
+
+        {/* 6.1 Unified Player Level & XP Progress Card */}
+        <BioCard variant="elevated" padding={18} style={styles.levelCard}>
+          <View style={styles.levelHeader}>
+            <View style={[styles.levelBadge, { backgroundColor: colors.primary }]}>
+              <Text style={styles.levelBadgeText}>Lvl {progression.level}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.levelTitleText, { color: colors.textPrimary }]}>{progression.title}</Text>
+              <Text style={[styles.levelSubText, { color: colors.textSecondary }]}>
+                {progression.currentLevelXP} / 100 XP to Level {progression.level + 1}
+              </Text>
+            </View>
+            <Text style={[styles.totalPointsText, { color: colors.primary }]}>{progression.totalGP} GP</Text>
+          </View>
+
+          {/* Progress Bar Track */}
+          <View style={[styles.progressBarTrack, { backgroundColor: colors.surfaceSecondary }]}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { backgroundColor: colors.primary, width: `${Math.max(5, progression.progressPercent)}%` },
+              ]}
+            />
+          </View>
+
+          <View style={styles.xpBreakdownRow}>
+            <Text style={[styles.breakdownTag, { color: colors.textSecondary }]}>
+              🌿 Wild: <Text style={{ fontWeight: '700', color: colors.primary }}>+{progression.wildXP} XP</Text>
+            </Text>
+            <Text style={[styles.breakdownTag, { color: colors.textSecondary }]}>
+              ♻️ Circular: <Text style={{ fontWeight: '700', color: colors.accentBlue }}>+{progression.circularGP} GP</Text>
+            </Text>
+          </View>
+        </BioCard>
+
+        {/* Quick Navigation Action Grid (Leaderboard & Rewards) */}
+        <View style={styles.actionGrid}>
+          <TouchableOpacity
+            style={[styles.gridCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}
+            onPress={() => navigation.navigate('Leaderboard')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.gridIconBg, { backgroundColor: '#F59E0B20' }]}>
+              <Ionicons name="trophy" size={22} color="#F59E0B" />
+            </View>
+            <Text style={[styles.gridTitle, { color: colors.textPrimary }]}>Leaderboard</Text>
+            <Text style={[styles.gridSub, { color: colors.textSecondary }]}>Campus Rank & Stats</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.gridCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}
+            onPress={() => navigation.navigate('Rewards')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.gridIconBg, { backgroundColor: '#10B98120' }]}>
+              <Ionicons name="gift" size={22} color="#10B981" />
+            </View>
+            <Text style={[styles.gridTitle, { color: colors.textPrimary }]}>Rewards</Text>
+            <Text style={[styles.gridSub, { color: colors.textSecondary }]}>Redeem GP Catalog</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* GreenPoints & Wallet Access Widget */}
         <BioCard variant="elevated" padding={18} style={[styles.walletWidgetCard, { backgroundColor: colors.primarySubtle }]}>
@@ -111,6 +200,80 @@ const styles = StyleSheet.create({
   },
   trustBadge: {
     marginTop: 14,
+  },
+  levelCard: {
+    gap: 12,
+  },
+  levelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  levelBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  levelBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  levelTitleText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  levelSubText: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  totalPointsText: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  progressBarTrack: {
+    height: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  xpBreakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
+  breakdownTag: {
+    fontSize: 12,
+  },
+  actionGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  gridCard: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    gap: 6,
+  },
+  gridIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  gridTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  gridSub: {
+    fontSize: 11,
   },
   walletWidgetCard: {
     gap: 14,

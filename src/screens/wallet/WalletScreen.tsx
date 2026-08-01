@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../providers/ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
 import { BioCard } from '../../components/common/BioCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { fetchUserLedgerBalance, UserLedgerSummary } from '../../lib/ledger';
+import { calculateProgressionFromTotal } from '../../lib/progression';
 
 export const WalletScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -31,6 +32,12 @@ export const WalletScreen: React.FC = () => {
     setRefreshing(false);
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      loadLedger();
+    }, [user])
+  );
+
   useEffect(() => {
     loadLedger();
   }, [user]);
@@ -39,6 +46,8 @@ export const WalletScreen: React.FC = () => {
     setRefreshing(true);
     loadLedger();
   };
+
+  const progression = calculateProgressionFromTotal(summary.total_gp);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: Math.max(insets.top, 12) }]}>
@@ -57,7 +66,14 @@ export const WalletScreen: React.FC = () => {
       >
         {/* Balance Card */}
         <BioCard variant="elevated" padding={20} style={[styles.balanceCard, { backgroundColor: colors.primarySubtle }]}>
-          <Text style={[styles.balanceLabel, { color: colors.primaryDark }]}>TOTAL GREENPOINTS</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={[styles.balanceLabel, { color: colors.primaryDark }]}>TOTAL GREENPOINTS</Text>
+            <View style={{ backgroundColor: colors.primary, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>
+                Lvl {progression.level} • {progression.title}
+              </Text>
+            </View>
+          </View>
           <Text style={[styles.balanceVal, { color: colors.primaryDark }]}>
             {loading ? '...' : `${summary.total_gp.toLocaleString()} GP`}
           </Text>
@@ -71,13 +87,21 @@ export const WalletScreen: React.FC = () => {
             </View>
 
             <View style={[styles.splitBox, { backgroundColor: colors.surface, borderRadius: radii.lg }]}>
-              <Ionicons name="cash" size={16} color={colors.accentBlue} />
+              <Ionicons name="sync-circle" size={16} color={colors.accentBlue} />
               <Text style={[styles.splitText, { color: colors.textPrimary }]}>
-                {loading ? '...' : `₹${summary.circular_payout} Circular Cash`}
+                {loading ? '...' : `${summary.circular_payout} Circular GP`}
               </Text>
             </View>
           </View>
         </BioCard>
+
+        {/* 5.3 Conversion Rate Banner */}
+        <View style={[styles.conversionBanner, { backgroundColor: colors.surfaceSecondary, borderRadius: radii.lg }]}>
+          <Ionicons name="swap-horizontal" size={18} color={colors.primary} />
+          <Text style={[styles.conversionText, { color: colors.textSecondary }]}>
+            Conversion Rate: <Text style={{ fontWeight: '700', color: colors.textPrimary }}>1 GreenPoint = 1 Wild XP = 1 Circular GP</Text>
+          </Text>
+        </View>
 
         {/* Unified Ledger Activity */}
         <View style={styles.sectionHeaderRow}>
@@ -182,6 +206,16 @@ const styles = StyleSheet.create({
   splitText: {
     fontSize: 13,
     fontWeight: '700',
+  },
+  conversionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  conversionText: {
+    fontSize: 12,
   },
   sectionHeaderRow: {
     flexDirection: 'row',

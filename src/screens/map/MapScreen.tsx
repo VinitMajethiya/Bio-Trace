@@ -13,12 +13,16 @@ import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { BioHeader } from '../../components/common/BioHeader';
 import { FilterChip } from '../../components/common/FilterChip';
 import { MetricCard } from '../../components/common/MetricCard';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { BottomSheetContainer } from '../../components/common/BottomSheetContainer';
+import { useAuth } from '../../context/AuthContext';
+import { fetchUserCollectionBook } from '../../lib/wild';
+import { fetchUserWasteHistory } from '../../lib/circular';
 import {
   fetchPilotTerritory,
   incrementHealthScore,
@@ -39,6 +43,67 @@ const SGU_POLYGON = [
   { lat: 16.7550, lng: 74.4600 },
 ];
 
+export interface MapMarkerItem {
+  id: string;
+  lat: number;
+  lng: number;
+  title: string;
+  subtitle?: string;
+  type: 'wild' | 'circular';
+  badgeIcon?: string;
+}
+
+const DEFAULT_WILD_MARKERS: MapMarkerItem[] = [
+  {
+    id: 'wild-1',
+    lat: 16.7485,
+    lng: 74.4665,
+    title: 'Indian Peafowl Habitat',
+    subtitle: 'Restoration Zone • Amber Tier',
+    type: 'wild',
+    badgeIcon: '🦚',
+  },
+  {
+    id: 'wild-2',
+    lat: 16.7465,
+    lng: 74.4690,
+    title: 'Sunbird Flora Cluster',
+    subtitle: 'Active Pollinator Sighting',
+    type: 'wild',
+    badgeIcon: '🌸',
+  },
+];
+
+const DEFAULT_CIRCULAR_MARKERS: MapMarkerItem[] = [
+  {
+    id: 'circ-1',
+    lat: 16.7480,
+    lng: 74.4685,
+    title: 'Smart Eco-Locker #01',
+    subtitle: 'Drop-off Station & Scanner',
+    type: 'circular',
+    badgeIcon: '📦',
+  },
+  {
+    id: 'circ-2',
+    lat: 16.7460,
+    lng: 74.4670,
+    title: 'E-Waste Recycling Hub',
+    subtitle: 'Certified Processing Station',
+    type: 'circular',
+    badgeIcon: '⚡',
+  },
+  {
+    id: 'circ-3',
+    lat: 16.7495,
+    lng: 74.4655,
+    title: 'Organic Composting Pit',
+    subtitle: 'Bio-waste Transformation Point',
+    type: 'circular',
+    badgeIcon: '🌱',
+  },
+];
+
 interface TerritoryMapProps {
   latitude: number;
   longitude: number;
@@ -46,6 +111,9 @@ interface TerritoryMapProps {
   userLocation?: { lat: number; lng: number } | null;
   territoryCenter: { lat: number; lng: number };
   zoom?: number;
+  wildMarkers?: MapMarkerItem[];
+  circularMarkers?: MapMarkerItem[];
+  activeFilter: 'Wild' | 'Circular' | 'Both';
 }
 
 export function TerritoryMap({
@@ -55,8 +123,14 @@ export function TerritoryMap({
   userLocation,
   territoryCenter,
   zoom = 17,
+  wildMarkers = DEFAULT_WILD_MARKERS,
+  circularMarkers = DEFAULT_CIRCULAR_MARKERS,
+  activeFilter,
 }: TerritoryMapProps) {
   const polygonLatLngs = polygonCoords.map(p => `[${p.lat}, ${p.lng}]`).join(',');
+
+  const showWild = activeFilter === 'Wild' || activeFilter === 'Both';
+  const showCircular = activeFilter === 'Circular' || activeFilter === 'Both';
 
   const html = `
     <!DOCTYPE html>
@@ -79,6 +153,32 @@ export function TerritoryMap({
         }
         .leaflet-tooltip-top:before {
           border-top-color: #059669 !important;
+        }
+        .leaflet-popup-content-wrapper {
+          border-radius: 12px !important;
+          padding: 4px !important;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
+        }
+        .custom-marker-pill {
+          padding: 5px 10px;
+          border-radius: 16px;
+          font-weight: 700;
+          font-size: 11px;
+          border: 2px solid white;
+          box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+        .wild-pill {
+          background: #059669;
+          color: white;
+        }
+        .circular-pill {
+          background: #2563EB;
+          color: white;
         }
       </style>
     </head>
@@ -123,6 +223,48 @@ export function TerritoryMap({
         `
             : ''
         }
+
+        ${
+          showWild
+            ? wildMarkers
+                .map(
+                  m => `
+          (function() {
+            var icon = L.divIcon({
+              className: 'div-marker',
+              html: '<div class="custom-marker-pill wild-pill"><span>${m.badgeIcon || '🌿'}</span> <span>${m.title.replace(/'/g, "\\'")}</span></div>',
+              iconAnchor: [40, 15]
+            });
+            L.marker([${m.lat}, ${m.lng}], { icon: icon })
+              .addTo(map)
+              .bindPopup("<b>${m.badgeIcon || '🌿'} ${m.title.replace(/'/g, "\\'")}</b><br/><span style='color:#64748B; font-size:12px;'>${(m.subtitle || 'Wild Biodiversity Sighting').replace(/'/g, "\\'")}</span>");
+          })();
+        `
+                )
+                .join('\n')
+            : ''
+        }
+
+        ${
+          showCircular
+            ? circularMarkers
+                .map(
+                  m => `
+          (function() {
+            var icon = L.divIcon({
+              className: 'div-marker',
+              html: '<div class="custom-marker-pill circular-pill"><span>${m.badgeIcon || '♻️'}</span> <span>${m.title.replace(/'/g, "\\'")}</span></div>',
+              iconAnchor: [40, 15]
+            });
+            L.marker([${m.lat}, ${m.lng}], { icon: icon })
+              .addTo(map)
+              .bindPopup("<b>${m.badgeIcon || '♻️'} ${m.title.replace(/'/g, "\\'")}</b><br/><span style='color:#64748B; font-size:12px;'>${(m.subtitle || 'Circular Drop-off Point').replace(/'/g, "\\'")}</span>");
+          })();
+        `
+                )
+                .join('\n')
+            : ''
+        }
       </script>
     </body>
     </html>
@@ -142,13 +284,70 @@ export function TerritoryMap({
 export const MapScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { colors, radii, shadows } = useTheme();
+  const { user } = useAuth();
   const [territory, setTerritory] = useState<Territory | null>(null);
   const [deviceLocation, setDeviceLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [areaName, setAreaName] = useState<string>('Green Pioneers Territory');
   const [loading, setLoading] = useState(true);
   const [boosting, setBoosting] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<'Wild' | 'Circular' | 'Both'>('Wild');
+  const [activeFilter, setActiveFilter] = useState<'Wild' | 'Circular' | 'Both'>('Both');
   const [isSheetExpanded, setIsSheetExpanded] = useState<boolean>(true);
+  const [wildMarkers, setWildMarkers] = useState<MapMarkerItem[]>(DEFAULT_WILD_MARKERS);
+  const [circularMarkers, setCircularMarkers] = useState<MapMarkerItem[]>(DEFAULT_CIRCULAR_MARKERS);
+
+  const fetchMarkers = async (userId?: string) => {
+    if (!userId) return;
+    try {
+      const obs = await fetchUserCollectionBook(userId);
+      if (obs && obs.length > 0) {
+        const userWild: MapMarkerItem[] = obs.map((item, idx) => ({
+          id: item.id || `obs-${idx}`,
+          lat: item.gps_lat || 16.7475 + (idx * 0.001 - 0.001),
+          lng: item.gps_lng || 74.4675 + (idx * 0.001 - 0.001),
+          title: item.species_label,
+          subtitle: `Logged Sighting • ${item.rarity_tier || 'Common'}`,
+          type: 'wild',
+          badgeIcon: item.rarity_tier === 'Legendary' ? '👑' : item.rarity_tier === 'Amber' ? '⭐' : '🌿',
+        }));
+        setWildMarkers([...userWild, ...DEFAULT_WILD_MARKERS]);
+      }
+
+      const txs = await fetchUserWasteHistory(userId);
+      if (txs && txs.length > 0) {
+        const userCirc: MapMarkerItem[] = txs.map((item, idx) => ({
+          id: item.id || `tx-${idx}`,
+          lat: 16.7480 + (idx * 0.0008 - 0.0008),
+          lng: 74.4685 + (idx * 0.0008 - 0.0008),
+          title: `${item.category} Recycled`,
+          subtitle: `Waste Log • ${item.weight_estimate}kg (₹${item.payout_amount})`,
+          type: 'circular',
+          badgeIcon: '♻️',
+        }));
+        setCircularMarkers([...userCirc, ...DEFAULT_CIRCULAR_MARKERS]);
+      }
+    } catch (e) {
+      console.warn('[MapScreen] Marker fetch error:', e);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isMounted = true;
+      const refetchData = async () => {
+        const data = await fetchPilotTerritory();
+        if (data && isMounted) {
+          setTerritory(data);
+        }
+        if (user?.id && isMounted) {
+          await fetchMarkers(user.id);
+        }
+      };
+      refetchData();
+      return () => {
+        isMounted = false;
+      };
+    }, [user?.id])
+  );
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -181,6 +380,10 @@ export const MapScreen: React.FC = () => {
       }
       setLoading(false);
 
+      if (user?.id) {
+        fetchMarkers(user.id);
+      }
+
       unsubscribe = subscribeToTerritoryChanges(PILOT_TERRITORY_ID, (updated) => {
         if (updated.health_score !== undefined) {
           setTerritory((prev) =>
@@ -195,7 +398,7 @@ export const MapScreen: React.FC = () => {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [user?.id]);
 
   const handleTestScoreBoost = async () => {
     setBoosting(true);
@@ -226,6 +429,9 @@ export const MapScreen: React.FC = () => {
           userLocation={deviceLocation}
           territoryCenter={{ lat: SGU_CAMPUS_REGION.latitude, lng: SGU_CAMPUS_REGION.longitude }}
           zoom={17}
+          activeFilter={activeFilter}
+          wildMarkers={wildMarkers}
+          circularMarkers={circularMarkers}
         />
 
         {/* Floating Top Controls Overlay */}

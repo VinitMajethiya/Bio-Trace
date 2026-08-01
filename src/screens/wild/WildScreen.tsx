@@ -40,7 +40,7 @@ import {
   IdentificationResult,
 } from '../../lib/wild';
 
-const SHOW_DEV_TOOLS = true;
+const SHOW_DEV_TOOLS = false;
 
 export const WildScreen: React.FC = () => {
   const insets = useSafeAreaInsets();

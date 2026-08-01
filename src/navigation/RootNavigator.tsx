@@ -6,10 +6,14 @@ import { useAuth } from '../context/AuthContext';
 import { AuthScreen } from '../screens/auth/AuthScreen';
 import { MainTabNavigator } from './MainTabNavigator';
 import { WalletScreen } from '../screens/wallet/WalletScreen';
+import { LeaderboardScreen } from '../screens/leaderboard/LeaderboardScreen';
+import { RewardsScreen } from '../screens/rewards/RewardsScreen';
 
 export type RootStackParamList = {
   MainTabs: undefined;
   Wallet: undefined;
+  Leaderboard: undefined;
+  Rewards: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,6 +35,8 @@ export const RootNavigator: React.FC = () => {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={MainTabNavigator} />
           <Stack.Screen name="Wallet" component={WalletScreen} />
+          <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+          <Stack.Screen name="Rewards" component={RewardsScreen} />
         </Stack.Navigator>
       ) : (
         <AuthScreen />

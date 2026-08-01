@@ -17,15 +17,21 @@ import { useAuth } from '../../context/AuthContext';
 import { BioCard } from '../../components/common/BioCard';
 import { PrimaryButton } from '../../components/common/PrimaryButton';
 import { SecondaryButton } from '../../components/common/SecondaryButton';
+import { OnboardingScreen } from '../onboarding/OnboardingScreen';
 
 export const AuthScreen: React.FC = () => {
   const { colors, radii } = useTheme();
   const { signInWithEmail, signUpWithEmail } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (showOnboarding) {
+    return <OnboardingScreen onComplete={() => setShowOnboarding(false)} />;
+  }
 
   const handleSubmit = async () => {
     const cleanEmail = email.trim().toLowerCase();
