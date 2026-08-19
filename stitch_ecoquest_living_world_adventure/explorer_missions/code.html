@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Explorer Missions - EcoQuest</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "on-background": "#161d18",
+                            "surface-dim": "#d5dcd4",
+                            "on-surface": "#161d18",
+                            "on-tertiary-container": "#6f0e21",
+                            "text-main": "#333333",
+                            "text-muted": "#888888",
+                            "surface-white": "#FFFFFF",
+                            "primary-fixed-dim": "#5cde97",
+                            "on-primary-container": "#004024",
+                            "error-container": "#ffdad6",
+                            "surface-container-highest": "#dde4dc",
+                            "on-primary-fixed-variant": "#00522f",
+                            "on-secondary-fixed": "#351000",
+                            "background": "#f4fbf3",
+                            "surface-bright": "#f4fbf3",
+                            "secondary-container": "#ff9967",
+                            "on-primary": "#ffffff",
+                            "outline": "#6d7a6f",
+                            "tertiary": "#a53845",
+                            "on-tertiary-fixed": "#40000c",
+                            "inverse-on-surface": "#ecf3ea",
+                            "on-secondary-container": "#773003",
+                            "primary-container": "#2bb673",
+                            "emerald": "#00A86B",
+                            "tertiary-container": "#f97883",
+                            "tertiary-fixed-dim": "#ffb3b6",
+                            "on-tertiary": "#ffffff",
+                            "surface-container": "#e9f0e7",
+                            "error": "#ba1a1a",
+                            "on-error-container": "#93000a",
+                            "secondary-fixed-dim": "#ffb693",
+                            "on-secondary-fixed-variant": "#793104",
+                            "surface-container-high": "#e3eae2",
+                            "on-error": "#ffffff",
+                            "secondary-fixed": "#ffdbcc",
+                            "surface-container-low": "#eef6ed",
+                            "forest-green": "#154212",
+                            "surface-tint": "#006d40",
+                            "tertiary-fixed": "#ffdada",
+                            "on-primary-fixed": "#002110",
+                            "surface-container-lowest": "#ffffff",
+                            "primary": "#006d40",
+                            "outline-variant": "#bccabd",
+                            "mint-background": "#D9F3E9",
+                            "secondary": "#97481b",
+                            "primary-fixed": "#7afbb1",
+                            "on-secondary": "#ffffff",
+                            "surface": "#f4fbf3",
+                            "on-surface-variant": "#3d4a40",
+                            "inverse-primary": "#5cde97",
+                            "surface-variant": "#dde4dc",
+                            "on-tertiary-fixed-variant": "#85202f",
+                            "inverse-surface": "#2b322d"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "gutter-md": "16px",
+                            "pill-padding-x": "20px",
+                            "pill-padding-y": "12px",
+                            "section-gap": "32px",
+                            "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                            "headline-lg-mobile": [
+                                    "Plus Jakarta Sans"
+                            ],
+                            "body-md": [
+                                    "Be Vietnam Pro"
+                            ],
+                            "headline-lg": [
+                                    "Plus Jakarta Sans"
+                            ],
+                            "title-md": [
+                                    "Plus Jakarta Sans"
+                            ],
+                            "body-lg": [
+                                    "Be Vietnam Pro"
+                            ],
+                            "label-sm": [
+                                    "Plus Jakarta Sans"
+                            ],
+                            "display-xl": [
+                                    "Plus Jakarta Sans"
+                            ]
+                    },
+                    "fontSize": {
+                            "headline-lg-mobile": [
+                                    "22px",
+                                    {
+                                            "lineHeight": "28px",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "body-md": [
+                                    "14px",
+                                    {
+                                            "lineHeight": "20px",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "headline-lg": [
+                                    "24px",
+                                    {
+                                            "lineHeight": "32px",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "title-md": [
+                                    "18px",
+                                    {
+                                            "lineHeight": "24px",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "body-lg": [
+                                    "16px",
+                                    {
+                                            "lineHeight": "24px",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "label-sm": [
+                                    "12px",
+                                    {
+                                            "lineHeight": "16px",
+                                            "letterSpacing": "0.02em",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "display-xl": [
+                                    "40px",
+                                    {
+                                            "lineHeight": "48px",
+                                            "letterSpacing": "-0.02em",
+                                            "fontWeight": "800"
+                                    }
+                            ]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.mint-background');
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-pill {
+            background: theme('colors.surface-white');
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+            border-radius: 1rem;
+        }
+        .btn-gradient {
+            background: linear-gradient(180deg, theme('colors.emerald') 0%, theme('colors.primary-container') 100%);
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-md pb-24 pt-20 max-w-md mx-auto relative min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-gutter-md bg-surface-container-low/80 dark:bg-surface-container-lowest/80 backdrop-blur-md rounded-full mx-container-padding mt-4 px-4 h-16 bg-surface-white/60 dark:bg-surface-container-highest/40 shadow-sm max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-white shadow-sm flex-shrink-0 bg-surface-variant">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A stylized 3D avatar of a cheerful explorer wearing a green cap, set against a soft mint background, evoking an airy optimism style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAI4RmUYpVrQwZGQholD0-nvGvpJSvyjHhKGAQi7cdF0X7NhSA5gMXf_GAsjy9TS2FY9A5FZs8NE1nNlMMd5yWtMSWQn9yCZelynn3zOsd86kQX7KmTNMIWtBbYQLWE1gMsVtw8_01sjxTVwPlfu4_p_5ncdnBcah_NRAgbx0E8NkQbGCDbE-ceXEL0ldPuF8orB6ANs5wKID4R80NOrRb8TNwfUCI5hrySDXlXXqwf5fQ8HJRXSBv2DQ"/>
+</div>
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-forest-green dark:text-primary-fixed">EcoQuest</h1>
+</div>
+</div>
+<div class="flex items-center justify-center bg-surface-white rounded-full px-4 py-2 shadow-sm">
+<span class="material-symbols-outlined text-secondary-container mr-1 text-sm" style="font-variation-settings: 'FILL' 1;">generating_tokens</span>
+<span class="font-label-sm text-label-sm text-forest-green">1,250 GP</span>
+</div>
+</header>
+<main class="px-container-padding space-y-section-gap mt-8">
+<!-- Toggle Tabs -->
+<div class="flex justify-center mb-6">
+<div class="bg-surface-white p-1 rounded-full shadow-sm flex items-center w-full max-w-[240px]">
+<button class="flex-1 bg-emerald text-on-primary rounded-full py-2 px-4 font-title-md text-sm text-center shadow-sm">Active</button>
+<button class="flex-1 text-text-muted hover:text-emerald rounded-full py-2 px-4 font-title-md text-sm text-center transition-colors">Completed</button>
+</div>
+</div>
+<!-- Featured Group Quest -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-forest-green">Featured Quest</h2>
+</div>
+<div class="glass-pill overflow-hidden relative">
+<div class="h-40 relative w-full">
+<img class="w-full h-full object-cover" data-alt="A vibrant, stylized 3D illustration of a sun-drenched mountain forest landscape. Lush green pine trees cluster around a majestic, snow-capped peak under a clear blue sky with fluffy clouds. The style is playful, optimistic, and highly polished, suitable for a modern eco-adventure app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhphu7NFBHVSBgqCVbj0lLShjh33Pr5b4eVezWLucQcCTwLesa89wf0CUwVZ4sjHZ-7aOqFzm58vvpmPZKD1-N4KMy449ktfyRVmXKiyZ23VjEnGp5dVPxoOouPmIhW1T8NLdfS5zkSCK7XJIUkf-WLbdtaZ7X8XI2E_yn7oyaWqkvjDQCTBAXhFYe9rfrpx4k5VriCfd3MBxO0O65No6qX1Fr2PtIdoubFgxcKSjBDi0PsTpc_2D_6g"/>
+<div class="absolute top-3 right-3 bg-secondary-container text-on-secondary-fixed rounded-full px-3 py-1 font-label-sm text-label-sm flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">group</span>
+<span>Co-op</span>
+</div>
+</div>
+<div class="p-4">
+<h3 class="font-title-md text-title-md text-forest-green mb-1">Alpine Reforestation</h3>
+<p class="font-body-md text-body-md text-text-muted mb-4">Join 500+ explorers in restoring the highland pine trails.</p>
+<div class="mb-4">
+<div class="flex justify-between text-xs font-label-sm text-label-sm mb-1 text-forest-green">
+<span>Progress</span>
+<span>65%</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2">
+<div class="bg-emerald h-2 rounded-full" style="width: 65%"></div>
+</div>
+</div>
+<button class="w-full btn-gradient text-on-primary rounded-full py-3 font-title-md text-title-md flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity">
+                        Join Expedition
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Daily Challenges -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-forest-green">Daily Challenges</h2>
+</div>
+<div class="space-y-4">
+<!-- Mission Card 1 -->
+<div class="glass-pill p-4 flex flex-col gap-3">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-mint-background flex items-center justify-center flex-shrink-0 text-emerald">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">recycling</span>
+</div>
+<div class="flex-1">
+<h3 class="font-title-md text-base text-forest-green">Zero Waste Hero</h3>
+<p class="font-body-md text-sm text-text-muted">Log 3 recycling activities today.</p>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-emerald block">+50 GP</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex-1 bg-surface-container-high rounded-full h-2">
+<div class="bg-emerald h-2 rounded-full" style="width: 33%"></div>
+</div>
+<span class="font-label-sm text-xs text-text-muted whitespace-nowrap">1/3</span>
+</div>
+</div>
+<!-- Mission Card 2 - Completed -->
+<div class="glass-pill p-4 flex flex-col gap-3 border border-emerald/20 bg-mint-background/30">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-emerald text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-2xl">directions_walk</span>
+</div>
+<div class="flex-1">
+<h3 class="font-title-md text-base text-forest-green">Morning Stroll</h3>
+<p class="font-body-md text-sm text-text-muted">Walk 2km before noon.</p>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-emerald block mb-1">+30 GP</span>
+</div>
+</div>
+<button class="w-full bg-emerald text-on-primary rounded-full py-2 font-title-md text-sm flex items-center justify-center gap-1 shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm">redeem</span>
+                        Claim Reward
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 bg-surface-white/90 dark:bg-surface-container-lowest/90 backdrop-blur-lg rounded-full mx-container-padding mb-6 h-20 bg-surface-white/80 dark:bg-surface-container-highest/60 shadow-md max-w-md mx-auto">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full transition-all duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full transition-all duration-200" href="#">
+<span class="material-symbols-outlined">search_check</span>
+</a>
+<!-- Active Tab: Backpack (Missions/Inventory intent) -->
+<a class="flex items-center justify-center bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-full p-4 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">backpack</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full transition-all duration-200" href="#">
+<span class="material-symbols-outlined">recycling</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full transition-all duration-200" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+</a>
+</nav>
+</body></html>

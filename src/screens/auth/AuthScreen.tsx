@@ -1,46 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../providers/ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
-import { BioCard } from '../../components/common/BioCard';
+import { DarkCard } from '../../components/common/BioCard';
 import { PrimaryButton } from '../../components/common/PrimaryButton';
 import { SecondaryButton } from '../../components/common/SecondaryButton';
-import { OnboardingScreen } from '../onboarding/OnboardingScreen';
+import { FilterPill } from '../../components/common/FilterChip';
+import { InputContainer } from '../../components/common/InputContainer';
 
 export const AuthScreen: React.FC = () => {
-  const { colors, radii } = useTheme();
+  const route = useRoute<any>();
+  const { colors } = useTheme();
   const { signInWithEmail, signUpWithEmail } = useAuth();
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [isSignUp, setIsSignUp] = useState(false);
+
+  const initialMode = route.params?.initialMode;
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  if (showOnboarding) {
-    return <OnboardingScreen onComplete={() => setShowOnboarding(false)} />;
-  }
+  useEffect(() => {
+    if (initialMode) {
+      setIsSignUp(initialMode === 'signup');
+    }
+  }, [initialMode]);
 
   const handleSubmit = async () => {
+    setErrorMsg('');
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) {
-      Alert.alert('Required Field', 'Please enter your email address.');
+      setErrorMsg('Please enter your email address.');
       return;
     }
     if (!password.trim() || password.length < 6) {
-      Alert.alert('Invalid Password', 'Password must be at least 6 characters.');
+      setErrorMsg('Password must be at least 6 characters.');
       return;
     }
 
@@ -49,7 +54,7 @@ export const AuthScreen: React.FC = () => {
       if (isSignUp) {
         const { data, error } = await signUpWithEmail(cleanEmail, password, displayName.trim());
         if (error) {
-          Alert.alert('Sign Up Failed', `${error.message}`);
+          setErrorMsg(error.message);
         } else if (!data?.session && !data?.user?.email_confirmed_at) {
           Alert.alert(
             'Confirmation Required',
@@ -61,11 +66,11 @@ export const AuthScreen: React.FC = () => {
       } else {
         const { error } = await signInWithEmail(cleanEmail, password);
         if (error) {
-          Alert.alert('Sign In Failed', `${error.message}`);
+          setErrorMsg(error.message);
         }
       }
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'An unexpected error occurred.');
+      setErrorMsg(e.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -79,78 +84,88 @@ export const AuthScreen: React.FC = () => {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: colors.canvas_airy || '#f4fbf3' }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <View style={[styles.logoBadge, { backgroundColor: colors.primarySubtle, borderColor: colors.primary }]}>
-            <Ionicons name="leaf-sharp" size={42} color={colors.primary} />
+          <View style={[styles.logoBadge, { backgroundColor: colors.mint_background || '#D9F3E9', borderColor: colors.outline_variant || '#BCCABD', borderWidth: 1.5 }]}>
+            <Ionicons name="leaf-sharp" size={42} color={colors.green_vivid || '#2BB673'} />
           </View>
-          <Text style={[styles.title, { color: colors.primaryDark }]}>BioVerse</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          <Text style={[styles.title, { color: colors.text_airy_primary || '#161d18' }]}>EcoQuest</Text>
+          <Text style={[styles.subtitle, { color: colors.text_airy_secondary || '#3d4a40' }]}>
             Wild Biodiversity Game ✕ Circular Recycling Marketplace
           </Text>
         </View>
 
-        <BioCard variant="elevated" padding={24} style={styles.card}>
-          <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
-            {isSignUp ? 'Create your BioVerse Account' : 'Welcome Back'}
-          </Text>
+        <DarkCard padding={24} style={styles.card}>
+          {/* Mode Switcher Tabs */}
+          <View style={styles.tabRow}>
+            <FilterPill
+              label="Sign In"
+              active={!isSignUp}
+              onPress={() => setIsSignUp(false)}
+              canvas="warm"
+              style={{ flex: 1, justifyContent: 'center' }}
+            />
+            <FilterPill
+              label="Sign Up"
+              active={isSignUp}
+              onPress={() => setIsSignUp(true)}
+              canvas="warm"
+              style={{ flex: 1, justifyContent: 'center' }}
+            />
+          </View>
 
           {isSignUp && (
-            <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Display Name</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: colors.surfaceSecondary, borderColor: colors.surfaceBorder }]}>
-                <Ionicons name="person-outline" size={20} color={colors.primary} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: colors.textPrimary }]}
-                  placeholder="e.g. EcoExplorer"
-                  placeholderTextColor={colors.textMuted}
-                  value={displayName}
-                  onChangeText={setDisplayName}
-                  autoCapitalize="words"
-                />
-              </View>
-            </View>
+            <InputContainer
+              label="Display Name"
+              icon="person-outline"
+              placeholder="e.g. EcoExplorer"
+              value={displayName}
+              onChangeText={setDisplayName}
+              autoCapitalize="words"
+              editable={!loading}
+              canvas="warm"
+            />
           )}
 
-          <View style={styles.inputContainer}>
-            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Email Address</Text>
-            <View style={[styles.inputWrapper, { backgroundColor: colors.surfaceSecondary, borderColor: colors.surfaceBorder }]}>
-              <Ionicons name="mail-outline" size={20} color={colors.primary} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, { color: colors.textPrimary }]}
-                placeholder="you@example.com"
-                placeholderTextColor={colors.textMuted}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-          </View>
+          <InputContainer
+            label="Email Address"
+            icon="mail-outline"
+            placeholder="you@example.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!loading}
+            canvas="warm"
+          />
 
-          <View style={styles.inputContainer}>
-            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Password</Text>
-            <View style={[styles.inputWrapper, { backgroundColor: colors.surfaceSecondary, borderColor: colors.surfaceBorder }]}>
-              <Ionicons name="lock-closed-outline" size={20} color={colors.primary} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, { color: colors.textPrimary }]}
-                placeholder="••••••••"
-                placeholderTextColor={colors.textMuted}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+          <InputContainer
+            label="Password"
+            icon="lock-closed-outline"
+            placeholder="••••••••"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            editable={!loading}
+            canvas="warm"
+          />
+
+          {!!errorMsg && (
+            <View style={[styles.errorBox, { backgroundColor: colors.danger_subtle || '#FFDAD6' }]}>
+              <Ionicons name="alert-circle-outline" size={18} color={colors.danger || '#BA1A1A'} />
+              <Text style={[styles.inlineError, { color: colors.danger || '#BA1A1A' }]}>{errorMsg}</Text>
             </View>
-          </View>
+          )}
 
           <PrimaryButton
             title={isSignUp ? 'Create Account' : 'Sign In'}
             onPress={handleSubmit}
             loading={loading}
+            disabled={loading}
             style={styles.submitBtn}
           />
 
@@ -158,19 +173,14 @@ export const AuthScreen: React.FC = () => {
             title="Fill Demo Credentials"
             icon="flash-outline"
             onPress={handleDemoLogin}
+            disabled={loading}
             style={styles.demoBtn}
           />
-
-          <TouchableOpacity style={styles.switchMode} onPress={() => setIsSignUp(!isSignUp)}>
-            <Text style={[styles.switchModeText, { color: colors.primary }]}>
-              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-            </Text>
-          </TouchableOpacity>
-        </BioCard>
+        </DarkCard>
 
         <View style={styles.footerNote}>
-          <Ionicons name="shield-checkmark-outline" size={16} color={colors.primary} />
-          <Text style={[styles.footerNoteText, { color: colors.textSecondary }]}>
+          <Ionicons name="shield-checkmark-outline" size={16} color={colors.green_vivid || '#2BB673'} />
+          <Text style={[styles.footerNoteText, { color: colors.text_airy_secondary || '#3d4a40' }]}>
             Unified auth for Wild XP & Circular GreenPoints
           </Text>
         </View>
@@ -190,20 +200,19 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 24,
   },
   logoBadge: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    borderWidth: 1.5,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   title: {
     fontSize: 32,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.5,
   },
   subtitle: {
@@ -214,51 +223,31 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   card: {
-    gap: 14,
+    gap: 16,
   },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+  tabRow: {
+    flexDirection: 'row',
+    gap: 8,
     marginBottom: 8,
-    textAlign: 'center',
   },
-  inputContainer: {
-    gap: 6,
-  },
-  inputLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  inputWrapper: {
+  errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    gap: 8,
   },
-  inputIcon: {
-    marginRight: 10,
-  },
-  input: {
+  inlineError: {
+    fontSize: 13,
+    fontWeight: '600',
     flex: 1,
-    height: 48,
-    fontSize: 15,
   },
   submitBtn: {
     marginTop: 8,
   },
   demoBtn: {
     marginTop: 4,
-  },
-  switchMode: {
-    marginTop: 12,
-    alignItems: 'center',
-  },
-  switchModeText: {
-    fontSize: 13,
-    fontWeight: '700',
   },
   footerNote: {
     flexDirection: 'row',

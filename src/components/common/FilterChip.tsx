@@ -3,22 +3,37 @@ import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../providers/ThemeProvider';
 
-interface FilterChipProps {
+export interface FilterPillProps {
   label: string;
   active: boolean;
   onPress: () => void;
   icon?: keyof typeof Ionicons.glyphMap;
+  canvas?: 'dark' | 'warm';
   style?: ViewStyle;
 }
 
-export const FilterChip: React.FC<FilterChipProps> = ({
+export const FilterPill: React.FC<FilterPillProps> = ({
   label,
   active,
   onPress,
   icon,
+  canvas = 'dark',
   style,
 }) => {
-  const { colors, radii, shadows } = useTheme();
+  const { colors, radii } = useTheme();
+
+  const isDark = canvas === 'dark';
+
+  const getBackgroundColor = () => {
+    return active ? colors.green_vivid || '#2BB673' : colors.mint_background || '#D9F3E9';
+  };
+
+  const getTextColor = () => {
+    return active ? '#FFFFFF' : colors.forest_green || '#154212';
+  };
+
+  const bgColor = getBackgroundColor();
+  const textColor = getTextColor();
 
   return (
     <TouchableOpacity
@@ -26,10 +41,8 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         styles.chip,
         {
           borderRadius: radii.pill,
-          backgroundColor: active ? colors.primary : colors.surface,
-          borderColor: active ? colors.primary : colors.surfaceBorder,
+          backgroundColor: bgColor,
         },
-        !active && shadows.sm,
         style,
       ]}
       onPress={onPress}
@@ -39,21 +52,18 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         <Ionicons
           name={icon}
           size={14}
-          color={active ? colors.textInverse : colors.textSecondary}
+          color={textColor}
           style={styles.icon}
         />
       )}
-      <Text
-        style={[
-          styles.label,
-          { color: active ? colors.textInverse : colors.textSecondary, fontWeight: active ? '700' : '600' },
-        ]}
-      >
+      <Text style={[styles.label, { color: textColor, fontWeight: active ? '700' : '600' }]}>
         {label}
       </Text>
     </TouchableOpacity>
   );
 };
+
+export const FilterChip: React.FC<FilterPillProps> = (props) => <FilterPill {...props} />;
 
 const styles = StyleSheet.create({
   chip: {
@@ -61,7 +71,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderWidth: 1,
   },
   icon: {
     marginRight: 6,

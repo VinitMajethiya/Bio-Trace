@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EcoQuest - Species Identification</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#161d18",
+                    "surface-dim": "#d5dcd4",
+                    "on-surface": "#161d18",
+                    "on-tertiary-container": "#6f0e21",
+                    "text-main": "#333333",
+                    "text-muted": "#888888",
+                    "surface-white": "#FFFFFF",
+                    "primary-fixed-dim": "#5cde97",
+                    "on-primary-container": "#004024",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#dde4dc",
+                    "on-primary-fixed-variant": "#00522f",
+                    "on-secondary-fixed": "#351000",
+                    "background": "#f4fbf3",
+                    "surface-bright": "#f4fbf3",
+                    "secondary-container": "#ff9967",
+                    "on-primary": "#ffffff",
+                    "outline": "#6d7a6f",
+                    "tertiary": "#a53845",
+                    "on-tertiary-fixed": "#40000c",
+                    "inverse-on-surface": "#ecf3ea",
+                    "on-secondary-container": "#773003",
+                    "primary-container": "#2bb673",
+                    "emerald": "#00A86B",
+                    "tertiary-container": "#f97883",
+                    "tertiary-fixed-dim": "#ffb3b6",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#e9f0e7",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#ffb693",
+                    "on-secondary-fixed-variant": "#793104",
+                    "surface-container-high": "#e3eae2",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#ffdbcc",
+                    "surface-container-low": "#eef6ed",
+                    "forest-green": "#154212",
+                    "surface-tint": "#006d40",
+                    "tertiary-fixed": "#ffdada",
+                    "on-primary-fixed": "#002110",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#006d40",
+                    "outline-variant": "#bccabd",
+                    "mint-background": "#D9F3E9",
+                    "secondary": "#97481b",
+                    "primary-fixed": "#7afbb1",
+                    "on-secondary": "#ffffff",
+                    "surface": "#f4fbf3",
+                    "on-surface-variant": "#3d4a40",
+                    "inverse-primary": "#5cde97",
+                    "surface-variant": "#dde4dc",
+                    "on-tertiary-fixed-variant": "#85202f",
+                    "inverse-surface": "#2b322d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter-md": "16px",
+                    "pill-padding-x": "20px",
+                    "pill-padding-y": "12px",
+                    "section-gap": "32px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-xl": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "22px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "title-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-xl": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #D9F3E9; /* Mint Background */
+            -webkit-font-smoothing: antialiased;
+        }
+        .pill-card {
+            background: #FFFFFF;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+        .gradient-btn {
+            background: linear-gradient(180deg, #2bb673 0%, #00A86B 100%);
+            box-shadow: 0 4px 15px rgba(0, 168, 107, 0.2);
+        }
+        .glass-overlay {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface min-h-screen flex flex-col md:flex-row pb-24 md:pb-0">
+<!-- Top Navigation (Desktop Only) -->
+<header class="hidden md:flex top-0 left-0 right-0 z-50 items-center justify-between px-gutter-md bg-surface-container-low/80 backdrop-blur-md rounded-full mx-container-padding mt-4 px-4 h-16 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A cheerful 3D avatar of a young explorer with a hat and glasses, smiling warmly against a solid mint background. Bright, high-key lighting, Pixar-style 3D render." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCf9MFDmox0eog13zvySQ9O6mntPkEuBBk02pTrc0hkfz4pnSq1tUVIEd2MpbVvCwsWAOQ7prUANDg-Eqvo8sNF0KpXxylk4FU4DryswnRTw8eSfsNnlSuv6vIQt3D7ogctV-vuWlvgFrSmce70-MQ-D-SA85EOqHLQBYWM5a42mSXaVV88oBhzVLZ2TBxyCH806_WI56LSTGKNFZHqRAohM0Yv3Fg5Vw-Tw34NZMzLQI2HLoK6gW_ZtA"/>
+</div>
+<h1 class="font-headline-lg font-bold text-forest-green">EcoQuest</h1>
+</div>
+<div class="flex items-center gap-6">
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">map</span></a>
+<a class="text-emerald hover:opacity-80 transition-opacity" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search_check</span></a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">recycling</span></a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">backpack</span></a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span></a>
+</div>
+<div class="font-title-md font-semibold text-primary">1,250 GP</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 w-full max-w-lg mx-auto relative mt-4 md:mt-8 px-container-padding">
+<!-- Mobile Back/Actions -->
+<div class="md:hidden flex justify-between items-center mb-6 z-10 relative">
+<button class="w-10 h-10 bg-surface-white rounded-full flex items-center justify-center shadow-sm text-on-surface">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 bg-surface-white rounded-full flex items-center justify-center shadow-sm text-on-surface">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+<!-- Species Image Card -->
+<div class="pill-card overflow-hidden relative mb-6">
+<div class="h-80 w-full relative bg-mint-background rounded-t-3xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A highly detailed, vibrant 3D illustration of a Blue Morpho Butterfly resting on a lush green leaf. The background is a soft, out-of-focus bright tropical forest. Sun-drenched serenity lighting, playful but realistic textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0o8x9jVEJxoTpqtEdM4Tw2DVHpmmh3I58paszMhNArd19F9g5CTSCyGiLUBQSfAeLsweglSy-x7Dhjs4tKuj6pd0WOwlAPjGvaBlIbspwbzNY0XaFTtrMaJ6H71oDOhuUkRxT63SjBAnXQ9apBwAaTnkpMaeotacawaG85r-pyHEvbjnYiTLVTyKutpN5LkPvCLaJt0RqH1w-O3odEWZt-Do2GCNIoqT387oFDaoVVxfO7jonFaRORg"/>
+<!-- Match Badge -->
+<div class="absolute top-4 right-4 bg-surface-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-sm text-emerald">99% Match</span>
+</div>
+</div>
+<div class="p-6 relative -mt-6 bg-surface-white rounded-3xl z-10">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-on-surface mb-1">Blue Morpho</h2>
+<p class="font-body-md text-text-muted italic">Morpho peleides</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-mint-background flex items-center justify-center text-emerald">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-3 mt-6">
+<!-- Habitat Tag -->
+<div class="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full border border-surface-container">
+<span class="material-symbols-outlined text-forest-green text-sm">park</span>
+<span class="font-label-sm text-on-primary-container">Tropical Forest</span>
+</div>
+<!-- Status Tag -->
+<div class="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full border border-surface-container">
+<span class="material-symbols-outlined text-forest-green text-sm">visibility</span>
+<span class="font-label-sm text-on-primary-container">Common</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Description Section -->
+<div class="mb-8">
+<h3 class="font-title-md text-on-surface mb-3">About Species</h3>
+<p class="font-body-md text-text-muted leading-relaxed">
+                The Blue Morpho is among the largest butterflies in the world, with wings spanning from five to eight inches. Their vivid, iridescent blue coloring is a result of the microscopic scales on the backs of their wings, which reflect light. <span class="text-emerald font-semibold cursor-pointer">Read More</span>
+</p>
+</div>
+<!-- Location Map Snippet -->
+<div class="pill-card p-4 mb-24 md:mb-8 flex items-center gap-4">
+<div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A clean, minimalist 3D map illustration showing a lush green tropical region with a stylized glowing location pin indicating the habitat of the Blue Morpho. Airy optimism style, light mint and emerald colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRISa0QCYSiZFNispRZffCh_2_EeVMMSPcrF7p7cjJA12307O4h-Lu-548UgoNuPoA1hYVGx8LxhwyHJ21y_dlS6oEQkPsZ-i9bcT-qUoCdwWK261g4V9qQmMBna5jXACl9btDxCscM2YLN_fvObObXbR_FYbw9BPW3X-ug6FnfzRH_3yMR2uUL2u4zTwympO5QU6VvuOzNqWfN_C9b0V_EKWiSKqhaDoUxvPZPXi74UDGhtRWCumdWw"/>
+</div>
+<div class="flex-1">
+<h4 class="font-title-md text-on-surface text-sm mb-1">Amazon Rainforest</h4>
+<p class="font-body-md text-text-muted text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    South America
+                </p>
+</div>
+<button class="text-emerald p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Floating Action Button (Mobile) -->
+<div class="fixed bottom-24 left-0 right-0 px-container-padding md:hidden z-40">
+<button class="w-full gradient-btn text-surface-white font-title-md py-4 rounded-full flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add_circle</span>
+            Add to Collection
+        </button>
+</div>
+<!-- Floating Action Button (Desktop - Bottom Right) -->
+<div class="hidden md:block fixed bottom-8 right-8 z-40">
+<button class="px-8 gradient-btn text-surface-white font-title-md py-4 rounded-full flex items-center justify-center gap-2 active:scale-95 transition-transform hover:opacity-90">
+<span class="material-symbols-outlined">add_circle</span>
+            Add to Collection
+        </button>
+</div>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 bg-surface-white/90 backdrop-blur-lg rounded-t-3xl h-20 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-surface-container-low">
+<a class="flex items-center justify-center text-on-surface-variant p-4 hover:bg-surface-container-high rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+</a>
+<a class="flex items-center justify-center bg-primary-container text-on-primary-container rounded-full p-4 active:scale-90 transition-all duration-200 shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search_check</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant p-4 hover:bg-surface-container-high rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">recycling</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant p-4 hover:bg-surface-container-high rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">backpack</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant p-4 hover:bg-surface-container-high rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+</a>
+</nav>
+</body></html>

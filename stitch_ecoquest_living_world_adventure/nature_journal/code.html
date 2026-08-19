@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nature Journal - Species Collection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#161d18",
+                        "surface-dim": "#d5dcd4",
+                        "on-surface": "#161d18",
+                        "on-tertiary-container": "#6f0e21",
+                        "text-main": "#333333",
+                        "text-muted": "#888888",
+                        "surface-white": "#FFFFFF",
+                        "primary-fixed-dim": "#5cde97",
+                        "on-primary-container": "#004024",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#dde4dc",
+                        "on-primary-fixed-variant": "#00522f",
+                        "on-secondary-fixed": "#351000",
+                        "background": "#f4fbf3",
+                        "surface-bright": "#f4fbf3",
+                        "secondary-container": "#ff9967",
+                        "on-primary": "#ffffff",
+                        "outline": "#6d7a6f",
+                        "tertiary": "#a53845",
+                        "on-tertiary-fixed": "#40000c",
+                        "inverse-on-surface": "#ecf3ea",
+                        "on-secondary-container": "#773003",
+                        "primary-container": "#2bb673",
+                        "emerald": "#00A86B",
+                        "tertiary-container": "#f97883",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e9f0e7",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#ffb693",
+                        "on-secondary-fixed-variant": "#793104",
+                        "surface-container-high": "#e3eae2",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#ffdbcc",
+                        "surface-container-low": "#eef6ed",
+                        "forest-green": "#154212",
+                        "surface-tint": "#006d40",
+                        "tertiary-fixed": "#ffdada",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#006d40",
+                        "outline-variant": "#bccabd",
+                        "mint-background": "#D9F3E9",
+                        "secondary": "#97481b",
+                        "primary-fixed": "#7afbb1",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f4fbf3",
+                        "on-surface-variant": "#3d4a40",
+                        "inverse-primary": "#5cde97",
+                        "surface-variant": "#dde4dc",
+                        "on-tertiary-fixed-variant": "#85202f",
+                        "inverse-surface": "#2b322d"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter-md": "16px",
+                        "pill-padding-x": "20px",
+                        "pill-padding-y": "12px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    fontFamily: {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-xl": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "headline-lg-mobile": ["22px", { lineHeight: "28px", fontWeight: "700" }],
+                        "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "headline-lg": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "title-md": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+                        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "700" }],
+                        "display-xl": ["40px", { lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.mint-background');
+            /* Airy Optimism padding */
+            padding-bottom: 120px; 
+            padding-top: 80px;
+        }
+        
+        .floating-card {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .floating-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .gradient-btn {
+            background: linear-gradient(180deg, theme('colors.primary-container') 0%, theme('colors.emerald') 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(43, 182, 115, 0.2);
+        }
+        
+        /* Hide scrollbar for horizontal scrolling lists */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-gutter-md bg-surface-container-low/80 dark:bg-surface-container-lowest/80 backdrop-blur-md rounded-full mx-container-padding mt-4 px-4 h-16 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-white">
+<img class="w-full h-full object-cover" data-alt="A cute, cheerful 3D avatar of a young explorer with a sun hat and binoculars. The style is playful, airy, and optimistic with soft lighting and a mint green background accent. The mood is welcoming and adventurous." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJIIRbB9eF1ElqJzUdkFhr0KGOriZa8nzuF0xyWVDwLcyVp6FTiaJqXxk_sHmRuLaOkphTW_5XOWGfq3iR68ftUZGtHirsvjNKyf3ZcqtQKD3NEMmMLzG0rS5qlnXOZlC9aMQ7ubEQiHRUEpYVeGg_LNg-28WfGBaZPBEX9iuzeDtzsFzJEwZsrDNv56gKD4Nw8EQKnUkZBz9DCTV-q--Rz7kS1Q5jBfBXBhKQ59FGGVQ072XeTzvXIA"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Welcome back,</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-forest-green dark:text-primary-fixed">Jeremy Zucker</span>
+</div>
+</div>
+<div>
+<button class="w-10 h-10 bg-surface-white rounded-full flex items-center justify-center shadow-sm hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-container-padding pt-6">
+<!-- Hero Section / Search & Filter -->
+<section class="mb-section-gap flex flex-col gap-4 mt-4">
+<div class="relative w-full">
+<input class="w-full bg-surface-white rounded-full py-4 pl-6 pr-12 text-body-md border-0 focus:ring-2 focus:ring-emerald shadow-sm outline-none placeholder-text-muted" placeholder="Search species..." type="text"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+<!-- Categories -->
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 pt-2">
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-label-sm whitespace-nowrap shadow-sm hover:opacity-80 active:scale-95 transition-all">All Species</button>
+<button class="bg-surface-white text-on-surface px-6 py-2 rounded-full font-label-sm whitespace-nowrap shadow-sm hover:opacity-80 active:scale-95 transition-all">Birds</button>
+<button class="bg-surface-white text-on-surface px-6 py-2 rounded-full font-label-sm whitespace-nowrap shadow-sm hover:opacity-80 active:scale-95 transition-all">Insects</button>
+<button class="bg-surface-white text-on-surface px-6 py-2 rounded-full font-label-sm whitespace-nowrap shadow-sm hover:opacity-80 active:scale-95 transition-all">Mammals</button>
+</div>
+</section>
+<!-- Discovery Progress -->
+<section class="mb-section-gap bg-surface-white rounded-xl p-6 floating-card relative overflow-hidden">
+<!-- Decorative elements -->
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-mint-background rounded-full opacity-50"></div>
+<div class="flex justify-between items-center mb-4 relative z-10">
+<h2 class="font-title-md text-title-md text-on-surface">Discovery Progress</h2>
+<span class="font-label-sm text-label-sm text-emerald">Level 4 Explorer</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-3 mb-2 relative z-10 overflow-hidden">
+<div class="bg-emerald h-3 rounded-full" style="width: 65%;"></div>
+</div>
+<div class="flex justify-between font-label-sm text-text-muted relative z-10">
+<span>65 / 100 Species</span>
+<span>35 to next level</span>
+</div>
+</section>
+<!-- Grid of Species Cards -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-forest-green">Recent Findings</h2>
+<button class="font-label-sm text-label-sm text-text-muted hover:text-emerald transition-colors">View All</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter-md">
+<!-- Card 1 -->
+<div class="bg-surface-white rounded-[1rem] p-4 floating-card flex flex-col gap-4">
+<div class="w-full h-40 rounded-lg overflow-hidden relative bg-mint-background">
+<img class="w-full h-full object-cover" data-alt="A bright, playful 3D illustration of a Ruby Hummingbird hovering over a stylized tropical flower. The style is cheerful, minimalist, and airy, set against a soft mint green background. High-key lighting, vivid colors, and soft rounded shapes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2aoWtXeSExY6wLcFSmQ4XUCarpfIkD6v-dCJ0aWqAKcj92ptNIJ2D3E9CeyTFDmUfTPVvfnNiHGJQwUA280Gu_SVH4Bocqdn12aK8gfXOXKEEpAAmriIQRWiZ8bDgPjWzswLRTzW-quvGOKBi6TQTjgmM8LNDpptBbgwNnk6fXSTZDq1DWB3DRHBM2KSTpNpC8AE_fyf1-Dq3l1P5BPH_i1t5xfRDPwriyNoSsw-2pn5gy0rgJfjwBg"/>
+<div class="absolute top-2 right-2 bg-secondary-container text-on-secondary-container font-label-sm px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done</span>
+                            Discovered
+                        </div>
+</div>
+<div>
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-title-md text-title-md text-on-surface">Ruby Hummingbird</h3>
+<span class="text-text-muted text-xs">Today</span>
+</div>
+<p class="font-label-sm text-label-sm text-text-muted flex items-center gap-1 mb-3">
+<span class="material-symbols-outlined text-[16px] text-emerald">location_on</span>
+                            Botanical Gardens
+                        </p>
+<button class="w-full gradient-btn rounded-full py-3 font-label-sm text-label-sm hover:opacity-90 active:scale-[0.98] transition-all">
+                            View Details
+                        </button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-white rounded-[1rem] p-4 floating-card flex flex-col gap-4">
+<div class="w-full h-40 rounded-lg overflow-hidden relative bg-mint-background">
+<img class="w-full h-full object-cover" data-alt="A vibrant 3D illustration of a Monarch Butterfly resting on a stylized green leaf. The style is playful, airy, and optimistic with soft, sun-drenched lighting. The color palette features warm oranges against a pristine white and soft green background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVJ7WaK2npJKqhVFcPYMOqqFAjb0jfL4YRG4mh9tDUxzMJNmESeSMrqsHLU9HrkWl5vXXicjD11XYy0Ad6C6KrGjwimmnV5lV14Df1XfANc0DP4SBqX9Yz-pEjTt0NqOCfU1MadoCLu0hSAoPkuiPvLm1YX5r0OSfiIqlCwj4XASJDmlQemx9BNxiUtwBGGfbgcphhnKoN7IEs_IuIjFvzz177B5_PzWAsBBEI4EZKEHO1ruhs3-39GQ"/>
+<div class="absolute top-2 right-2 bg-surface-white/90 backdrop-blur text-text-muted font-label-sm px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+                            Sighted
+                        </div>
+</div>
+<div>
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-title-md text-title-md text-on-surface">Monarch Wing</h3>
+<span class="text-text-muted text-xs">Yesterday</span>
+</div>
+<p class="font-label-sm text-label-sm text-text-muted flex items-center gap-1 mb-3">
+<span class="material-symbols-outlined text-[16px] text-emerald">location_on</span>
+                            Meadow Trail
+                        </p>
+<button class="w-full bg-surface-container hover:bg-surface-container-high text-on-surface rounded-full py-3 font-label-sm text-label-sm transition-all active:scale-[0.98]">
+                            Add Notes
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="hidden md:hidden sm:flex md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 bg-surface-white/90 dark:bg-surface-container-lowest/90 backdrop-blur-lg rounded-full mx-container-padding mb-6 h-20 shadow-md">
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">map</span>
+</button>
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">search_check</span>
+</button>
+<button class="flex items-center justify-center bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-full p-4 active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">recycling</span>
+</button>
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">backpack</span>
+</button>
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">menu_book</span>
+</button>
+</nav>
+<!-- Mobile BottomNav override for desktop viewing of this code snippet (forces display for layout testing if needed, though hidden on larger screens natively) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 bg-surface-white/90 dark:bg-surface-container-lowest/90 backdrop-blur-lg rounded-full mx-container-padding mb-6 h-20 shadow-md">
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">map</span>
+</button>
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">search_check</span>
+</button>
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">recycling</span>
+</button>
+<button class="flex items-center justify-center bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-full p-4 active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">backpack</span>
+</button>
+<button class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">menu_book</span>
+</button>
+</nav>
+</body></html>

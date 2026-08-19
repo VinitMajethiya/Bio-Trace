@@ -81,8 +81,64 @@ Goal: it runs smoothly on a phone in front of judges.
 
 ---
 
-## Related docs
-- [[00-OVERVIEW]] — what you're building and why
-- [[01-TECH-STACK]] — stack detail, especially the Expo Go AI workaround
-- [[03-DATA-MODEL]] — table-by-table schema for Stage 1.4
-- [[04-FEATURES-SCOPE]] — full in/out/stretch feature list if you need to make a cut call mid-build
+Stage 7 — Community/Society Infrastructure (NEW — foundational for Stages 8 & 10)
+
+Goal: introduce the concept of a "society" (a residential community/area), since both the Health Score Dashboard and Clean Raids need it. This generalizes the current single-pilot-territory model into multiple named communities.
+
+ 7.1 societies table — extend or parallel the existing territories table: each society has a name, boundary, and its own health_score. Seed 2-3 demo societies (not just one pilot zone) so the dashboard/leaderboard in later stages has something to compare.
+ 7.2 Assign users to a society — add society_id to users, set at signup or via a "join society" step in onboarding.
+ 7.3 Moderator role field — add moderator_of_society_id (nullable) to users.
+ 7.4 Simplified election/voting flow — a moderator_votes table (voter_id, candidate_id, society_id). Any member of a society can nominate themselves or vote for a candidate; whoever has the most votes when an admin/cron "closes" the election becomes that society's moderator. Keep this simple — no ranked-choice or complex voting logic needed for the demo, a plain vote count is enough.
+Stage 8 — Health Score Dashboard
+
+Goal: a real interactive dashboard, not just a single number on the map.
+
+ 8.1 Multi-society aggregation — dashboard screen listing all societies with their current health_score, sortable/comparable.
+ 8.2 Per-society breakdown — within one society, show the split between Wild-driven and Circular-driven score contributions (reuse the ledger's source tagging).
+ 8.3 "Where you lack" insights — simple rule-based suggestions (not AI), e.g. "This society has 3x more Circular activity than Wild — try a species walk this week." A small lookup of threshold-based messages is enough.
+ 8.4 Individual contribution view — within a society's dashboard, show which members contributed most (ties into the existing leaderboard data, scoped to one society instead of global).
+Stage 9 — DIY Upcycling Module
+
+Goal: when saved waste isn't enough for a scheduled pickup, suggest upcycling it at home instead.
+
+ 9.1 "Insufficient material" trigger — in the Waste Locker, if total accumulated weight/value is below the pickup threshold, surface a "Try a DIY project instead" prompt.
+ 9.2 DIY suggestion data — a curated static lookup table (material category → 2-3 project ideas + a YouTube search deep-link). No AI or API key needed: construct a YouTube search URL and open it via Linking.openURL() — zero setup, zero cost. (Optional stretch: the YouTube Data API v3 has a free quota and doesn't require a billing account, unlike Maps — could later swap deep-links for embedded video results if there's time.)
+ 9.3 DIY screen UI — browsable by waste category, shows project ideas with a thumbnail/icon and a "Watch on YouTube" button.
+Stage 10 — Clean Raids & Moderator Verification
+
+Goal: the Pokemon Go-style group cleanup event system. This is the largest remaining stage — build it in the sub-order below, each piece testable on its own before adding the next.
+
+ 10.1 Raid creation (moderator-only) — a moderator (from Stage 7.4) can create a raid: title, location (pin on the map), scheduled time. Gate this UI so only users with moderator_of_society_id matching their society can see the "Create Raid" button.
+ 10.2 Raid discovery + join — raids show as a distinct marker type on the map (reuse the layer-toggle pattern from Stage 5.2 — add a "Raids" layer). Members can tap a raid to see details and "Join."
+ 10.3 Before/after photo submission — participants submit a "before" photo at raid start and an "after" photo at raid end, tied to their raid participation record.
+ 10.4 Moderator review queue — a Reddit-mod-style screen visible only to the moderator: list of pending before/after photo pairs, approve/reject buttons.
+ 10.5 Points + Health Score distribution on approval — when the moderator approves a raid as complete, batch-write GreenPoints ledger entries (tagged raid_bonus) for every confirmed participant, and apply a larger Health Score bump to that raid's society.
+ 10.6 Raid history — a simple past-raids list per society, showing outcome and participant count, feeding into the Stage 8 dashboard.
+Stage 11 — Scan Verification & Accuracy Upgrade
+
+Goal: make submissions harder to fake, and make waste classification genuinely reliable — not overpromising more than what's actually achievable for free.
+
+ 11.1 Camera-only scoring — photos captured live via expo-camera count for points; gallery-uploaded photos either don't score or get flagged for extra review. This is the honest, achievable version of "detect a photo of a screen" — a real screen-recapture detector isn't reliably buildable for free, so structurally prevent the exploit instead of trying to detect it after the fact.
+ 11.2 EXIF metadata check (secondary signal, not a guarantee) — check for camera make/model EXIF fields as a weak secondary signal alongside 11.1. Document in code comments that this is a deterrent, not proof.
+ 11.3 Waste model accuracy audit — confirm exactly which Hugging Face model is currently wired into the Circular scanner (unclear from prior stage reports) and verify its label set actually distinguishes glass vs. plastic vs. transparent materials specifically. If coverage is weak, search for and swap in a better free waste-classification model, same rigor as the Stage 3 bird-model selection — confirm label coverage before wiring it in.
+Stage 12 — NGO / Government Data Sharing
+
+Goal: demonstrate the "verified biodiversity data flows to people who can act on it" story, without building real outbound integrations.
+
+ 12.1 Admin/partner data view — a simple role-gated screen showing verified species observations (species, location, date, confidence) in a clean table.
+ 12.2 Export function — a "Export as CSV" button generating a downloadable file of verified observations. Enough to demonstrate the concept — a real NGO/government data pipeline is out of scope.
+Stage 13 — Polish & Demo Prep (final stage)
+
+Goal: it runs smoothly on a phone in front of judges — do this LAST, after Stages 7-12 are functional.
+
+ 13.1 Onboarding flow — first-launch walkthrough, including the new "join a society" step from Stage 7.2
+ 13.2 Visual consistency pass — spacing, colors, icons consistent across every screen including the new Dashboard, DIY, and Raid screens
+ 13.3 Seed demo data — multiple societies, moderators, past raids, sightings, and waste logs so nothing looks empty in front of judges
+ 13.4 Full run-through on a physical device — the whole journey: sign in -> society -> scan species -> scan waste -> check DIY suggestion -> view dashboard -> join/verify a raid -> check leaderboard/rewards
+ 13.5 Pre-demo checklist — SHOW_DEV_TOOLS = false, no console errors, .env still gitignored, Supabase usage nowhere near free-tier limits
+ 13.6 Rehearse the demo narrative — the original "one bird photo, one bottle photo, same score, same map" moment, PLUS the new centerpiece: a Clean Raid being verified live by a moderator and points landing for the whole group
+Related docs
+[[00-OVERVIEW]] — what you're building and why
+[[01-TECH-STACK]] — stack detail, including all the gotchas hit so far
+[[03-DATA-MODEL]] — schema (will need updates for societies, moderator_votes, raids, raid_participants)
+[[04-FEATURES-SCOPE]] — updated in/out/stretch feature list

@@ -6,8 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../providers/ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
 import { fetchUserLedgerBalance } from '../../lib/ledger';
-import { BioCard } from '../../components/common/BioCard';
+import { WarmCard } from '../../components/common/BioCard';
 import { PrimaryButton } from '../../components/common/PrimaryButton';
+import { FilterPill } from '../../components/common/FilterChip';
+import { GreenPointsChip } from '../../components/common/GreenPointsChip';
+import { IconButton } from '../../components/common/IconButton';
 
 export interface RewardItem {
   id: string;
@@ -26,7 +29,7 @@ const REWARDS_CATALOG: RewardItem[] = [
     description: 'Get 20% off any organic beverage or eco-snack at SGU Cafe.',
     costGP: 50,
     icon: 'cafe',
-    color: '#F59E0B',
+    color: '#D97706',
     category: 'Voucher',
   },
   {
@@ -35,7 +38,7 @@ const REWARDS_CATALOG: RewardItem[] = [
     description: 'Claim a native plant sapling from the campus botanical nursery.',
     costGP: 80,
     icon: 'leaf',
-    color: '#059669',
+    color: '#3E6B48',
     category: 'Eco-Item',
   },
   {
@@ -44,7 +47,7 @@ const REWARDS_CATALOG: RewardItem[] = [
     description: 'Durable 100% recycled organic cotton bag with BioVerse logo.',
     costGP: 100,
     icon: 'bag',
-    color: '#10B981',
+    color: '#2D4F34',
     category: 'Merchandise',
   },
   {
@@ -62,7 +65,7 @@ const REWARDS_CATALOG: RewardItem[] = [
     description: 'Unlimited 1-day pass for high-speed solar laptop charging station.',
     costGP: 200,
     icon: 'flash',
-    color: '#8B5CF6',
+    color: '#D97706',
     category: 'Campus Utility',
   },
 ];
@@ -72,9 +75,11 @@ export const RewardsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { colors, radii } = useTheme();
   const { user } = useAuth();
+
   const [userGP, setUserGP] = useState<number>(0);
   const [selectedReward, setSelectedReward] = useState<RewardItem | null>(null);
   const [redeemedCode, setRedeemedCode] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const loadBalance = async () => {
     if (user?.id) {
@@ -107,108 +112,99 @@ export const RewardsScreen: React.FC = () => {
     setSelectedReward(reward);
   };
 
+  const filteredCatalog = REWARDS_CATALOG.filter((item) => {
+    if (activeCategory === 'All') return true;
+    return item.category === activeCategory;
+  });
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: Math.max(insets.top, 12) }]}>
-      {/* Header Bar */}
-      <View style={[styles.header, { borderBottomColor: colors.surfaceBorder }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Ionicons name="gift" size={22} color={colors.primary} />
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Eco Rewards Catalogue</Text>
+    <View style={[styles.container, { backgroundColor: colors.canvas_airy || '#f4fbf3', paddingTop: Math.max(insets.top, 16) }]}>
+      {/* Top Header */}
+      <View style={styles.topHeader}>
+        <IconButton icon="arrow-back" onPress={() => navigation.goBack()} />
+        <Text style={[styles.displayTitle, { color: colors.text_airy_primary || '#161d18' }]}>
+          Rewards
+        </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* User GP Balance Banner */}
-        <BioCard variant="elevated" padding={16} style={[styles.balanceBanner, { backgroundColor: colors.primarySubtle }]}>
-          <View style={styles.balanceRow}>
-            <View>
-              <Text style={[styles.balanceSub, { color: colors.textSecondary }]}>Available Balance</Text>
-              <Text style={[styles.balanceVal, { color: colors.primaryDark }]}>{userGP} GreenPoints</Text>
-            </View>
-            <View style={[styles.gpBadgeBg, { backgroundColor: colors.primary }]}>
-              <Ionicons name="sparkles" size={18} color="#FFFFFF" />
-            </View>
-          </View>
-        </BioCard>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Large Balance Display WarmCard */}
+        <WarmCard variant="hero" padding={24} style={styles.balanceCard}>
+          <Text style={[styles.balanceLabel, { color: colors.text_on_warm_secondary || '#3E6B48' }]}>AVAILABLE BALANCE</Text>
+          <Text style={[styles.dataLargeVal, { color: colors.amber || '#E8A920' }]}>
+            {userGP} <Text style={{ fontSize: 24 }}>GP</Text>
+          </Text>
+          <Text style={[styles.balanceSub, { color: colors.text_on_warm_muted || '#7A9882' }]}>
+            Redeem GreenPoints for campus discounts, saplings, and eco-gear.
+          </Text>
+        </WarmCard>
 
-        <Text style={[styles.catalogHeading, { color: colors.textPrimary }]}>Redeemable Campus Rewards</Text>
+        {/* Filter Pills */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBar}>
+          {['All', 'Voucher', 'Eco-Item', 'Merchandise', 'Campus Utility'].map((cat) => (
+            <FilterPill
+              key={cat}
+              label={cat}
+              active={activeCategory === cat}
+              onPress={() => setActiveCategory(cat)}
+              canvas="warm"
+            />
+          ))}
+        </ScrollView>
 
-        {/* Rewards Grid */}
-        <View style={styles.rewardsList}>
-          {REWARDS_CATALOG.map((item) => {
+        {/* 2x2 Grid of Rewards */}
+        <View style={styles.rewardsGrid}>
+          {filteredCatalog.map((item) => {
             const canAfford = userGP >= item.costGP;
 
             return (
-              <BioCard key={item.id} variant="outlined" padding={14} style={styles.rewardCard}>
-                <View style={[styles.iconBox, { backgroundColor: `${item.color}18` }]}>
-                  <Ionicons name={item.icon} size={24} color={item.color} />
+              <WarmCard key={item.id} padding={16} style={styles.rewardCol}>
+                <View style={[styles.iconBg, { backgroundColor: colors.amber_subtle || 'rgba(232, 169, 32, 0.15)' }]}>
+                  <Ionicons name={item.icon} size={26} color={colors.amber || '#E8A920'} />
                 </View>
 
-                <View style={{ flex: 1 }}>
-                  <View style={styles.rewardTagRow}>
-                    <Text style={[styles.categoryTag, { color: colors.textMuted }]}>{item.category}</Text>
-                  </View>
-                  <Text style={[styles.rewardTitle, { color: colors.textPrimary }]}>{item.title}</Text>
-                  <Text style={[styles.rewardDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-                    {item.description}
-                  </Text>
+                <Text style={[styles.rewardTitle, { color: colors.text_on_warm_primary || '#142217' }]} numberOfLines={1}>{item.title}</Text>
+                <Text style={[styles.rewardDesc, { color: colors.text_on_warm_secondary || '#3E6B48' }]} numberOfLines={2}>{item.description}</Text>
+
+                <View style={styles.cardFooterRow}>
+                  <GreenPointsChip points={item.costGP} label="Cost" />
                 </View>
 
-                <View style={styles.actionCol}>
-                  <View style={[styles.priceTag, { backgroundColor: canAfford ? colors.primarySubtle : colors.surfaceSecondary }]}>
-                    <Text style={[styles.priceText, { color: canAfford ? colors.primaryDark : colors.textMuted }]}>
-                      {item.costGP} GP
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.redeemBtn,
-                      { backgroundColor: canAfford ? colors.primary : colors.surfaceSecondary },
-                    ]}
-                    onPress={() => handleRedeemClick(item)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.redeemBtnText, { color: canAfford ? '#FFFFFF' : colors.textMuted }]}>
-                      Redeem
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </BioCard>
+                <PrimaryButton
+                  title={canAfford ? 'Redeem' : 'Locked'}
+                  onPress={() => handleRedeemClick(item)}
+                  disabled={!canAfford}
+                  size="sm"
+                  style={{ width: '100%', marginTop: 6 }}
+                />
+              </WarmCard>
             );
           })}
         </View>
       </ScrollView>
 
-      {/* Redemption Confirmation Modal */}
+      {/* Voucher Code Modal */}
       <Modal visible={!!selectedReward} animationType="slide" transparent>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(20, 34, 23, 0.60)' }]}>
+          <WarmCard padding={24} style={[styles.modalCard, { borderTopLeftRadius: radii.card_hero || 36, borderTopRightRadius: radii.card_hero || 36 }]}>
             <View style={styles.modalHeader}>
-              <View style={[styles.modalSuccessIcon, { backgroundColor: colors.primarySubtle }]}>
-                <Ionicons name="checkmark-circle" size={32} color={colors.primary} />
-              </View>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text_on_warm_primary || '#142217' }}>Voucher Claimed!</Text>
               <TouchableOpacity onPress={() => setSelectedReward(null)}>
-                <Ionicons name="close" size={24} color={colors.textSecondary} />
+                <Ionicons name="close" size={24} color={colors.text_on_warm_secondary || '#7A9882'} />
               </TouchableOpacity>
             </View>
 
-            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Reward Redeemed!</Text>
-            <Text style={[styles.modalSub, { color: colors.textSecondary }]}>
-              Show this digital voucher code or QR pass at the SGU Campus Eco-Kiosk to collect your {selectedReward?.title}.
+            <Text style={{ fontSize: 13, color: colors.text_on_warm_secondary || '#3E6B48' }}>
+              Show this digital code at the SGU Kiosk to claim {selectedReward?.title}.
             </Text>
 
-            <View style={[styles.voucherCard, { backgroundColor: colors.surfaceSecondary, borderRadius: radii.lg }]}>
-              <Text style={[styles.voucherLabel, { color: colors.textMuted }]}>REDEEMED VOUCHER CODE</Text>
-              <Text style={[styles.voucherCode, { color: colors.primary }]}>{redeemedCode}</Text>
-              <View style={styles.qrPlaceholder}>
-                <Ionicons name="qr-code" size={72} color={colors.textPrimary} />
-              </View>
+            <View style={[styles.voucherBox, { backgroundColor: colors.card_warm_soft || '#FFFDF9' }]}>
+              <Text style={[styles.codeText, { color: colors.green_vivid || '#4CAF72' }]}>{redeemedCode}</Text>
+              <Ionicons name="qr-code" size={80} color={colors.text_on_warm_primary || '#142217'} style={{ marginTop: 8 }} />
             </View>
 
             <PrimaryButton title="Done" onPress={() => setSelectedReward(null)} />
-          </View>
+          </WarmCard>
         </View>
       </Modal>
     </View>
@@ -219,160 +215,108 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    height: 52,
+  topHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    gap: 10,
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 8,
   },
   backBtn: {
     padding: 4,
-    marginRight: 4,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+  displayTitle: {
+    fontSize: 34,
+    lineHeight: 40,
+    fontWeight: '700',
+    letterSpacing: -0.8,
   },
   content: {
-    padding: 16,
+    padding: 24,
     gap: 16,
     paddingBottom: 40,
   },
-  balanceBanner: {
-    borderColor: 'rgba(5, 150, 105, 0.3)',
-  },
-  balanceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  balanceCard: {
     alignItems: 'center',
+    gap: 6,
+  },
+  balanceLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    color: '#3E6B48',
+  },
+  dataLargeVal: {
+    fontSize: 48,
+    lineHeight: 52,
+    fontWeight: '700',
+    letterSpacing: -1,
   },
   balanceSub: {
     fontSize: 12,
-    fontWeight: '600',
+    color: '#7A9882',
+    textAlign: 'center',
+    marginTop: 4,
   },
-  balanceVal: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginTop: 2,
+  filterBar: {
+    gap: 8,
+    paddingVertical: 2,
   },
-  gpBadgeBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  catalogHeading: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  rewardsList: {
-    gap: 12,
-  },
-  rewardCard: {
+  rewardsGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    flexWrap: 'wrap',
+    gap: 14,
   },
-  iconBox: {
+  rewardCol: {
+    width: '47.5%',
+    gap: 8,
+    alignItems: 'flex-start',
+  },
+  iconBg: {
     width: 44,
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rewardTagRow: {
-    marginBottom: 2,
-  },
-  categoryTag: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
   rewardTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
+    color: '#142217',
   },
   rewardDesc: {
     fontSize: 11,
+    color: '#3E6B48',
+    lineHeight: 15,
+  },
+  cardFooterRow: {
     marginTop: 2,
   },
-  actionCol: {
-    alignItems: 'flex-end',
-    gap: 6,
-  },
-  priceTag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  priceText: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  redeemBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  redeemBtnText: {
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  modalBackdrop: {
+  modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     justifyContent: 'flex-end',
   },
   modalCard: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    gap: 14,
-    paddingBottom: 32,
+    padding: 24,
+    gap: 16,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  modalSuccessIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  voucherBox: {
+    padding: 20,
+    backgroundColor: '#FFFDF9',
+    borderRadius: 16,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  modalSub: {
-    fontSize: 13,
-  },
-  voucherCard: {
-    padding: 16,
-    alignItems: 'center',
-    gap: 8,
-  },
-  voucherLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  voucherCode: {
-    fontSize: 22,
-    fontWeight: '800',
+  codeText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#4CAF72',
     letterSpacing: 2,
-  },
-  qrPlaceholder: {
-    marginTop: 8,
-    padding: 12,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
   },
 });

@@ -13,13 +13,14 @@ import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../providers/ThemeProvider';
-import { BioHeader } from '../../components/common/BioHeader';
-import { FilterChip } from '../../components/common/FilterChip';
+import { FilterPill } from '../../components/common/FilterChip';
 import { MetricCard } from '../../components/common/MetricCard';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { BottomSheetContainer } from '../../components/common/BottomSheetContainer';
+import { HealthRing } from '../../components/common/HealthRing';
+import { DarkCard } from '../../components/common/BioCard';
 import { useAuth } from '../../context/AuthContext';
 import { fetchUserCollectionBook } from '../../lib/wild';
 import { fetchUserWasteHistory } from '../../lib/circular';
@@ -30,6 +31,7 @@ import {
   PILOT_TERRITORY_ID,
   Territory,
 } from '../../lib/territory';
+import { fetchActiveRaids, joinCleanRaid, CleanRaid } from '../../lib/raids';
 
 const SGU_CAMPUS_REGION = {
   latitude: 16.7475,
@@ -49,7 +51,7 @@ export interface MapMarkerItem {
   lng: number;
   title: string;
   subtitle?: string;
-  type: 'wild' | 'circular';
+  type: 'wild' | 'circular' | 'raid';
   badgeIcon?: string;
 }
 
@@ -113,7 +115,8 @@ interface TerritoryMapProps {
   zoom?: number;
   wildMarkers?: MapMarkerItem[];
   circularMarkers?: MapMarkerItem[];
-  activeFilter: 'Wild' | 'Circular' | 'Both';
+  raidMarkers?: MapMarkerItem[];
+  activeFilter: 'Wild' | 'Circular' | 'Raids' | 'Both';
 }
 
 export function TerritoryMap({
@@ -125,12 +128,14 @@ export function TerritoryMap({
   zoom = 17,
   wildMarkers = DEFAULT_WILD_MARKERS,
   circularMarkers = DEFAULT_CIRCULAR_MARKERS,
+  raidMarkers = [],
   activeFilter,
 }: TerritoryMapProps) {
   const polygonLatLngs = polygonCoords.map(p => `[${p.lat}, ${p.lng}]`).join(',');
 
   const showWild = activeFilter === 'Wild' || activeFilter === 'Both';
   const showCircular = activeFilter === 'Circular' || activeFilter === 'Both';
+  const showRaids = activeFilter === 'Raids' || activeFilter === 'Both';
 
   const html = `
     <!DOCTYPE html>
@@ -139,46 +144,199 @@ export function TerritoryMap({
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <style>
-        html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #F4F7F5; }
-        .leaflet-tooltip {
-          background: #FFFFFF !important;
-          border: 1.5px solid #059669 !important;
-          color: #0F172A !important;
-          font-family: system-ui, -apple-system, sans-serif !important;
-          font-weight: 700 !important;
-          font-size: 13px !important;
-          border-radius: 8px !important;
-          padding: 5px 10px !important;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-        }
-        .leaflet-tooltip-top:before {
-          border-top-color: #059669 !important;
-        }
+        * { box-sizing: border-box; }
+        html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #eaf3eb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        
+        /* Modern Leaflet Popup Customization */
         .leaflet-popup-content-wrapper {
-          border-radius: 12px !important;
-          padding: 4px !important;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
+          background: rgba(255, 255, 255, 0.98) !important;
+          backdrop-filter: blur(16px) !important;
+          -webkit-backdrop-filter: blur(16px) !important;
+          border-radius: 18px !important;
+          padding: 0 !important;
+          border: 1.5px solid rgba(43, 182, 115, 0.25) !important;
+          box-shadow: 0 12px 28px rgba(20, 34, 23, 0.20), 0 3px 10px rgba(0,0,0,0.06) !important;
         }
-        .custom-marker-pill {
-          padding: 5px 10px;
-          border-radius: 16px;
-          font-weight: 700;
-          font-size: 11px;
-          border: 2px solid white;
-          box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-          white-space: nowrap;
+        .leaflet-popup-content {
+          margin: 14px 16px !important;
+          line-height: 1.35 !important;
+        }
+        .leaflet-popup-tip {
+          background: rgba(255, 255, 255, 0.98) !important;
+        }
+        .leaflet-popup-close-button {
+          color: #6d7a6f !important;
+          padding: 8px !important;
+        }
+
+        /* Marker Pin Base */
+        .div-marker {
+          background: transparent;
+          border: none;
+        }
+        .eco-marker-wrap {
+          position: relative;
+          width: 42px;
+          height: 48px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          cursor: pointer;
+          transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .eco-marker-wrap:active, .eco-marker-wrap:hover {
+          transform: scale(1.22) translateY(-4px);
+          z-index: 9999 !important;
+        }
+
+        /* 3D Teardrop Pin */
+        .eco-pin-bubble {
+          width: 38px;
+          height: 38px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(255,255,255,0.6);
+          border: 2.5px solid #FFFFFF;
+          position: relative;
+          z-index: 2;
+        }
+        .eco-pin-icon {
+          transform: rotate(45deg);
+          font-size: 18px;
+          line-height: 1;
+          display: block;
+        }
+
+        /* Circular Badge for Landmark HQ */
+        .eco-pin-round {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255,255,255,0.6);
+          border: 2.5px solid #FFFFFF;
+          position: relative;
+          z-index: 2;
+        }
+        .eco-pin-round-icon {
+          font-size: 19px;
+          line-height: 1;
+        }
+
+        /* Color Gradients */
+        .pin-wild {
+          background: linear-gradient(135deg, #2BB673 0%, #15803D 100%);
+        }
+        .pin-circ {
+          background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+        .pin-raid {
+          background: linear-gradient(135deg, #A855F7 0%, #6366F1 100%);
+        }
+        .pin-hq {
+          background: linear-gradient(135deg, #059669 0%, #064E3B 100%);
+        }
+
+        /* Pulsing Radar Wave for Clean Raids */
+        .raid-radar-ring {
+          position: absolute;
+          top: 3px;
+          left: 5px;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(168, 85, 247, 0.45);
+          animation: raid-pulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+          z-index: 1;
+          pointer-events: none;
+        }
+        @keyframes raid-pulse {
+          0% {
+            transform: scale(0.9);
+            opacity: 0.95;
+          }
+          100% {
+            transform: scale(2.6);
+            opacity: 0;
+          }
+        }
+
+        /* GPS Location Beacon */
+        .user-gps-beacon {
+          position: relative;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .user-gps-dot {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #2563EB;
+          border: 3px solid #FFFFFF;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5);
+          z-index: 2;
+        }
+        .user-gps-pulse {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: rgba(37, 99, 235, 0.35);
+          animation: gps-wave 2s infinite ease-out;
+          z-index: 1;
+        }
+        @keyframes gps-wave {
+          0% { transform: scale(0.8); opacity: 0.9; }
+          100% { transform: scale(3.2); opacity: 0; }
+        }
+
+        /* Popup Cards Inside Leaflet */
+        .popup-badge {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-family: system-ui, -apple-system, sans-serif;
+          padding: 3px 8px;
+          border-radius: 99px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 6px;
         }
-        .wild-pill {
-          background: #059669;
-          color: white;
+        .popup-badge-wild { background: #D9F3E9; color: #15803D; }
+        .popup-badge-circ { background: #FEF3C7; color: #B45309; }
+        .popup-badge-raid { background: #F3E8FF; color: #7E22CE; }
+        
+        .popup-title {
+          font-size: 14px;
+          font-weight: 700;
+          color: #161D18;
+          margin: 0 0 2px 0;
         }
-        .circular-pill {
-          background: #2563EB;
-          color: white;
+        .popup-subtitle {
+          font-size: 11px;
+          color: #6D7A6F;
+          margin: 0;
+        }
+        .popup-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: 8px;
+          padding-top: 8px;
+          border-top: 1px solid rgba(0,0,0,0.06);
+          font-size: 11px;
+          font-weight: 600;
+          color: #2BB673;
         }
       </style>
     </head>
@@ -196,30 +354,38 @@ export function TerritoryMap({
           maxZoom: 19
         }).addTo(map);
 
+        // Territory boundary polygon with smooth aesthetics
         L.polygon([${polygonLatLngs}], {
-          color: '#059669',
-          weight: 3,
-          fillColor: '#059669',
-          fillOpacity: 0.2
+          color: '#2BB673',
+          weight: 2.5,
+          dashArray: '6, 6',
+          fillColor: '#2BB673',
+          fillOpacity: 0.12
         }).addTo(map);
 
-        var territoryMarker = L.marker([${territoryCenter.lat}, ${territoryCenter.lng}]).addTo(map);
-        territoryMarker.bindTooltip("📍 Green Pioneers Territory", {
-          permanent: true,
-          direction: 'top',
-          offset: [0, -10]
+        // Territory Landmark HQ Pin
+        var territoryIcon = L.divIcon({
+          className: 'div-marker',
+          html: '<div class="eco-marker-wrap"><div class="eco-pin-round pin-hq"><span class="eco-pin-round-icon">📍</span></div></div>',
+          iconSize: [42, 48],
+          iconAnchor: [21, 24]
         });
+        L.marker([${territoryCenter.lat}, ${territoryCenter.lng}], { icon: territoryIcon })
+          .addTo(map)
+          .bindPopup("<div class='popup-badge popup-badge-wild'>🌿 Pilot Territory HQ</div><div class='popup-title'>Green Pioneers Territory</div><div class='popup-subtitle'>Campus Ecological Health Zone</div><div class='popup-footer'><span>Active Protection</span><span>Live 88%</span></div>");
 
         ${
           userLocation
             ? `
-          L.marker([${userLocation.lat}, ${userLocation.lng}], {
-            icon: L.icon({
-              iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-            })
-          }).addTo(map).bindPopup('You are here').openPopup();
+          var userGpsIcon = L.divIcon({
+            className: 'div-marker',
+            html: '<div class="user-gps-beacon"><div class="user-gps-pulse"></div><div class="user-gps-dot"></div></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+          L.marker([${userLocation.lat}, ${userLocation.lng}], { icon: userGpsIcon })
+            .addTo(map)
+            .bindPopup("<div class='popup-title'>📍 You Are Here</div><div class='popup-subtitle'>GPS Location Synchronized</div>");
         `
             : ''
         }
@@ -232,12 +398,13 @@ export function TerritoryMap({
           (function() {
             var icon = L.divIcon({
               className: 'div-marker',
-              html: '<div class="custom-marker-pill wild-pill"><span>${m.badgeIcon || '🌿'}</span> <span>${m.title.replace(/'/g, "\\'")}</span></div>',
-              iconAnchor: [40, 15]
+              html: '<div class="eco-marker-wrap"><div class="eco-pin-bubble pin-wild"><span class="eco-pin-icon">${m.badgeIcon || '🌿'}</span></div></div>',
+              iconSize: [42, 48],
+              iconAnchor: [21, 44]
             });
             L.marker([${m.lat}, ${m.lng}], { icon: icon })
               .addTo(map)
-              .bindPopup("<b>${m.badgeIcon || '🌿'} ${m.title.replace(/'/g, "\\'")}</b><br/><span style='color:#64748B; font-size:12px;'>${(m.subtitle || 'Wild Biodiversity Sighting').replace(/'/g, "\\'")}</span>");
+              .bindPopup("<div class='popup-badge popup-badge-wild'>🌿 Wild Species</div><div class='popup-title'>${m.badgeIcon || '🌿'} ${m.title.replace(/'/g, "\\'")}</div><div class='popup-subtitle'>${(m.subtitle || 'Biodiversity Observation').replace(/'/g, "\\'")}</div><div class='popup-footer'><span>Logged in Collection</span><span>+5 XP</span></div>");
           })();
         `
                 )
@@ -253,12 +420,35 @@ export function TerritoryMap({
           (function() {
             var icon = L.divIcon({
               className: 'div-marker',
-              html: '<div class="custom-marker-pill circular-pill"><span>${m.badgeIcon || '♻️'}</span> <span>${m.title.replace(/'/g, "\\'")}</span></div>',
-              iconAnchor: [40, 15]
+              html: '<div class="eco-marker-wrap"><div class="eco-pin-bubble pin-circ"><span class="eco-pin-icon">${m.badgeIcon || '♻️'}</span></div></div>',
+              iconSize: [42, 48],
+              iconAnchor: [21, 44]
             });
             L.marker([${m.lat}, ${m.lng}], { icon: icon })
               .addTo(map)
-              .bindPopup("<b>${m.badgeIcon || '♻️'} ${m.title.replace(/'/g, "\\'")}</b><br/><span style='color:#64748B; font-size:12px;'>${(m.subtitle || 'Circular Drop-off Point').replace(/'/g, "\\'")}</span>");
+              .bindPopup("<div class='popup-badge popup-badge-circ'>♻️ Circular Hub</div><div class='popup-title'>${m.badgeIcon || '♻️'} ${m.title.replace(/'/g, "\\'")}</div><div class='popup-subtitle'>${(m.subtitle || 'Drop-off & Recycling Point').replace(/'/g, "\\'")}</div><div class='popup-footer'><span>Open for Drop-off</span><span>Earn Green Coins</span></div>");
+          })();
+        `
+                )
+                .join('\n')
+            : ''
+        }
+
+        ${
+          showRaids
+            ? raidMarkers
+                .map(
+                  m => `
+          (function() {
+            var icon = L.divIcon({
+              className: 'div-marker',
+              html: '<div class="eco-marker-wrap"><div class="raid-radar-ring"></div><div class="eco-pin-bubble pin-raid"><span class="eco-pin-icon">${m.badgeIcon || '🧹'}</span></div></div>',
+              iconSize: [42, 48],
+              iconAnchor: [21, 44]
+            });
+            L.marker([${m.lat}, ${m.lng}], { icon: icon })
+              .addTo(map)
+              .bindPopup("<div class='popup-badge popup-badge-raid'>⚡ Active Raid</div><div class='popup-title'>${m.badgeIcon || '🧹'} ${m.title.replace(/'/g, "\\'")}</div><div class='popup-subtitle'>${(m.subtitle || 'Community Cleanup').replace(/'/g, "\\'")}</div><div class='popup-footer'><span>Raid in Progress</span><span>Join Now</span></div>");
           })();
         `
                 )
@@ -283,48 +473,67 @@ export function TerritoryMap({
 
 export const MapScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const { colors, radii, shadows } = useTheme();
   const { user } = useAuth();
   const [territory, setTerritory] = useState<Territory | null>(null);
   const [deviceLocation, setDeviceLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationDenied, setLocationDenied] = useState<boolean>(false);
   const [areaName, setAreaName] = useState<string>('Green Pioneers Territory');
   const [loading, setLoading] = useState(true);
   const [boosting, setBoosting] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<'Wild' | 'Circular' | 'Both'>('Both');
+  const [activeFilter, setActiveFilter] = useState<'Wild' | 'Circular' | 'Raids' | 'Both'>('Both');
   const [isSheetExpanded, setIsSheetExpanded] = useState<boolean>(true);
   const [wildMarkers, setWildMarkers] = useState<MapMarkerItem[]>(DEFAULT_WILD_MARKERS);
   const [circularMarkers, setCircularMarkers] = useState<MapMarkerItem[]>(DEFAULT_CIRCULAR_MARKERS);
+  const [raidMarkers, setRaidMarkers] = useState<MapMarkerItem[]>([]);
+  const [activeRaids, setActiveRaids] = useState<CleanRaid[]>([]);
+  const [joiningRaidId, setJoiningRaidId] = useState<string | null>(null);
 
   const fetchMarkers = async (userId?: string) => {
-    if (!userId) return;
     try {
-      const obs = await fetchUserCollectionBook(userId);
-      if (obs && obs.length > 0) {
-        const userWild: MapMarkerItem[] = obs.map((item, idx) => ({
-          id: item.id || `obs-${idx}`,
-          lat: item.gps_lat || 16.7475 + (idx * 0.001 - 0.001),
-          lng: item.gps_lng || 74.4675 + (idx * 0.001 - 0.001),
-          title: item.species_label,
-          subtitle: `Logged Sighting • ${item.rarity_tier || 'Common'}`,
-          type: 'wild',
-          badgeIcon: item.rarity_tier === 'Legendary' ? '👑' : item.rarity_tier === 'Amber' ? '⭐' : '🌿',
-        }));
-        setWildMarkers([...userWild, ...DEFAULT_WILD_MARKERS]);
+      if (userId) {
+        const obs = await fetchUserCollectionBook(userId);
+        if (obs && obs.length > 0) {
+          const userWild: MapMarkerItem[] = obs.map((item, idx) => ({
+            id: item.id || `obs-${idx}`,
+            lat: item.gps_lat || 16.7475 + (idx * 0.001 - 0.001),
+            lng: item.gps_lng || 74.4675 + (idx * 0.001 - 0.001),
+            title: item.species_label,
+            subtitle: `Logged Sighting • ${item.rarity_tier || 'Common'}`,
+            type: 'wild',
+            badgeIcon: item.rarity_tier === 'Legendary' ? '👑' : item.rarity_tier === 'Amber' ? '⭐' : '🌿',
+          }));
+          setWildMarkers([...userWild, ...DEFAULT_WILD_MARKERS]);
+        }
+
+        const txs = await fetchUserWasteHistory(userId);
+        if (txs && txs.length > 0) {
+          const userCirc: MapMarkerItem[] = txs.map((item, idx) => ({
+            id: item.id || `tx-${idx}`,
+            lat: 16.7480 + (idx * 0.0008 - 0.0008),
+            lng: 74.4685 + (idx * 0.0008 - 0.0008),
+            title: `${item.category} Recycled`,
+            subtitle: `Waste Log • ${item.weight_estimate}kg (₹${item.payout_amount})`,
+            type: 'circular',
+            badgeIcon: '♻️',
+          }));
+          setCircularMarkers([...userCirc, ...DEFAULT_CIRCULAR_MARKERS]);
+        }
       }
 
-      const txs = await fetchUserWasteHistory(userId);
-      if (txs && txs.length > 0) {
-        const userCirc: MapMarkerItem[] = txs.map((item, idx) => ({
-          id: item.id || `tx-${idx}`,
-          lat: 16.7480 + (idx * 0.0008 - 0.0008),
-          lng: 74.4685 + (idx * 0.0008 - 0.0008),
-          title: `${item.category} Recycled`,
-          subtitle: `Waste Log • ${item.weight_estimate}kg (₹${item.payout_amount})`,
-          type: 'circular',
-          badgeIcon: '♻️',
-        }));
-        setCircularMarkers([...userCirc, ...DEFAULT_CIRCULAR_MARKERS]);
-      }
+      const raids = await fetchActiveRaids();
+      setActiveRaids(raids);
+      const rMarkers: MapMarkerItem[] = raids.map((r) => ({
+        id: r.id,
+        lat: r.lat,
+        lng: r.lng,
+        title: r.title,
+        subtitle: `Clean Raid • ${r.participant_count || 0} Joined`,
+        type: 'raid',
+        badgeIcon: '🧹',
+      }));
+      setRaidMarkers(rMarkers);
     } catch (e) {
       console.warn('[MapScreen] Marker fetch error:', e);
     }
@@ -350,6 +559,7 @@ export const MapScreen: React.FC = () => {
   );
 
   useEffect(() => {
+    let isMounted = true;
     let unsubscribe: (() => void) | undefined;
 
     const loadTerritoryAndLocation = async () => {
@@ -358,16 +568,22 @@ export const MapScreen: React.FC = () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
           const location = await Location.getCurrentPositionAsync({});
-          setDeviceLocation({
-            lat: location.coords.latitude,
-            lng: location.coords.longitude,
-          });
+          if (isMounted) {
+            setDeviceLocation({
+              lat: location.coords.latitude,
+              lng: location.coords.longitude,
+            });
+          }
+        } else if (isMounted) {
+          setLocationDenied(true);
         }
       } catch (err) {
         console.warn('[MapScreen] Device location error:', err);
       }
 
       const data = await fetchPilotTerritory();
+      if (!isMounted) return;
+
       if (data) {
         setTerritory(data);
       } else {
@@ -380,22 +596,29 @@ export const MapScreen: React.FC = () => {
       }
       setLoading(false);
 
-      if (user?.id) {
+      if (user?.id && isMounted) {
         fetchMarkers(user.id);
       }
 
-      unsubscribe = subscribeToTerritoryChanges(PILOT_TERRITORY_ID, (updated) => {
-        if (updated.health_score !== undefined) {
+      const sub = subscribeToTerritoryChanges(PILOT_TERRITORY_ID, (updated) => {
+        if (isMounted && updated.health_score !== undefined) {
           setTerritory((prev) =>
             prev ? { ...prev, health_score: updated.health_score! } : null
           );
         }
       });
+
+      if (!isMounted) {
+        sub();
+      } else {
+        unsubscribe = sub;
+      }
     };
 
     loadTerritoryAndLocation();
 
     return () => {
+      isMounted = false;
       if (unsubscribe) unsubscribe();
     };
   }, [user?.id]);
@@ -413,14 +636,31 @@ export const MapScreen: React.FC = () => {
 
   const currentScore = territory?.health_score ?? 88;
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Top Header Bar */}
-      <View style={{ paddingTop: Math.max(insets.top, 8) }}>
-        <BioHeader title="BioVerse" />
+  if (locationDenied) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.canvas_dark || '#142217', padding: 24, justifyContent: 'center' }]}>
+        <DarkCard padding={24} style={{ alignItems: 'center', gap: 16 }}>
+          <Ionicons name="location-outline" size={56} color={colors.green_vivid || '#4CAF72'} />
+          <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text_on_warm_primary || '#142217', textAlign: 'center' }}>
+            Location Access Required
+          </Text>
+          <Text style={{ fontSize: 14, color: colors.text_on_warm_secondary || '#3E6B48', textAlign: 'center', lineHeight: 20 }}>
+            EcoQuest needs location access to map your sightings and waste logs to your campus pilot territory.
+          </Text>
+          <TouchableOpacity
+            style={{ backgroundColor: colors.green_vivid || '#4CAF72', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 9999 }}
+            onPress={() => setLocationDenied(false)}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Continue to Map</Text>
+          </TouchableOpacity>
+        </DarkCard>
       </View>
+    );
+  }
 
-      {/* Main Map View */}
+  return (
+    <View style={[styles.container, { backgroundColor: colors.canvas_dark || '#142217' }]}>
+      {/* 100% Full Bleed Map View */}
       <View style={styles.mapWrap}>
         <TerritoryMap
           latitude={deviceLocation?.lat ?? SGU_CAMPUS_REGION.latitude}
@@ -432,120 +672,172 @@ export const MapScreen: React.FC = () => {
           activeFilter={activeFilter}
           wildMarkers={wildMarkers}
           circularMarkers={circularMarkers}
+          raidMarkers={raidMarkers}
         />
 
-        {/* Floating Top Controls Overlay */}
-        <View style={styles.floatingControls} pointerEvents="box-none">
-          {/* Global Health Pill Tag */}
-          <View style={[styles.globalHealthPill, { backgroundColor: colors.surface }, shadows.sm]}>
-            <Ionicons name="leaf" size={14} color={colors.primary} />
-            <Text style={[styles.globalHealthText, { color: colors.textPrimary }]}>
-              Global Health: <Text style={{ color: colors.primary, fontWeight: '800' }}>{currentScore * 9}</Text>
-            </Text>
+        {/* Floating Glass Top Bar */}
+        <View style={[styles.floatingTopBar, { paddingTop: Math.max(insets.top, 16) }]} pointerEvents="box-none">
+          <View
+            style={[
+              styles.glassBar,
+              {
+                backgroundColor: colors.glassBackground || 'rgba(255, 255, 255, 0.88)',
+                borderRadius: radii.pill,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.4)',
+              },
+              shadows.floating,
+            ]}
+          >
+            <HealthRing score={currentScore} size={42} strokeWidth={4} showLabel={false} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.territoryName, { color: colors.text_on_warm_primary || '#142217' }]}>
+                {areaName}
+              </Text>
+              <Text style={[styles.territorySub, { color: colors.text_on_warm_secondary || '#3E6B48' }]}>
+                Live Health Score: {currentScore}%
+              </Text>
+            </View>
           </View>
 
-          {/* Filter Pills Row */}
-          <View style={[styles.filterRow, { backgroundColor: colors.surface }, shadows.sm]}>
-            <FilterChip
-              label="Wild"
+          {/* Floating Filter Chips ScrollView */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterChipScroll}
+            pointerEvents="auto"
+          >
+            <FilterPill
+              label="Wild Layer"
+              icon="leaf-outline"
               active={activeFilter === 'Wild'}
               onPress={() => setActiveFilter('Wild')}
-              style={styles.chipItem}
+              canvas="warm"
             />
-            <FilterChip
-              label="Circular"
+            <FilterPill
+              label="Circular Layer"
+              icon="sync-outline"
               active={activeFilter === 'Circular'}
               onPress={() => setActiveFilter('Circular')}
-              style={styles.chipItem}
+              canvas="warm"
             />
-            <FilterChip
-              label="Both"
+            <FilterPill
+              label="Clean Raids"
+              icon="shield-checkmark-outline"
+              active={activeFilter === 'Raids'}
+              onPress={() => setActiveFilter('Raids')}
+              canvas="warm"
+            />
+            <FilterPill
+              label="All Layers"
+              icon="layers-outline"
               active={activeFilter === 'Both'}
               onPress={() => setActiveFilter('Both')}
-              style={styles.chipItem}
+              canvas="warm"
             />
-          </View>
-
-          {/* Search Bar Overlay */}
-          <View style={[styles.searchBar, { backgroundColor: colors.surface }, shadows.sm]}>
-            <Ionicons name="search" size={18} color={colors.textSecondary} />
-            <TextInput
-              placeholder="Search eco-zones..."
-              placeholderTextColor={colors.textMuted}
-              style={[styles.searchInput, { color: colors.textPrimary }]}
-            />
-            <Ionicons name="mic" size={18} color={colors.textSecondary} />
-          </View>
+          </ScrollView>
         </View>
 
-        {/* Draggable & Expandable Bottom Sheet Details */}
-        <View style={styles.bottomSheetWrapper} pointerEvents="auto">
+        {/* Bottom Sheet Details */}
+        <View
+          style={[
+            styles.bottomSheetWrapper,
+            { bottom: Math.max(insets.bottom, 12) + 76 }
+          ]}
+          pointerEvents="box-none"
+        >
           <BottomSheetContainer style={styles.bottomSheetContainer}>
-            {/* Interactive Header Bar */}
             <TouchableOpacity
               style={styles.sheetHeaderTouch}
               onPress={() => setIsSheetExpanded(!isSheetExpanded)}
               activeOpacity={0.8}
             >
               <View style={{ flex: 1 }}>
-                <Text style={[styles.sheetTitle, { color: colors.textPrimary }]}>{areaName}</Text>
+                <Text style={[styles.sheetTitle, { color: colors.text_airy_primary || '#161d18' }]}>{areaName}</Text>
                 <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
-                  <Text style={[styles.statusText, { color: colors.primary }]}>Healthy Status</Text>
-                  <Text style={[styles.expandHint, { color: colors.textSecondary }]}>
-                    ({isSheetExpanded ? 'Tap to collapse' : 'Tap to expand'})
-                  </Text>
+                  <View style={[styles.statusDot, { backgroundColor: colors.green_vivid || '#2BB673' }]} />
+                  <Text style={[styles.statusText, { color: colors.green_vivid || '#2BB673' }]}>Active Territory</Text>
                 </View>
               </View>
 
               <View style={styles.scoreCol}>
-                <Text style={[styles.scoreNumber, { color: colors.primary }]}>{currentScore}%</Text>
-                <Ionicons name={isSheetExpanded ? 'chevron-down' : 'chevron-up'} size={18} color={colors.primary} />
+                <Text style={[styles.scoreNumber, { color: colors.green_vivid || '#2BB673' }]}>{currentScore}%</Text>
+                <Ionicons name={isSheetExpanded ? 'chevron-down' : 'chevron-up'} size={18} color={colors.green_vivid || '#2BB673'} />
               </View>
             </TouchableOpacity>
 
-            {/* Expandable Content Body */}
             {isSheetExpanded && (
               <ScrollView
-                style={{ maxHeight: 280 }}
+                style={{ maxHeight: 300 }}
                 contentContainerStyle={styles.expandedContent}
                 nestedScrollEnabled
-                showsVerticalScrollIndicator={false}
+                showsVerticalScrollIndicator={true}
               >
-                {/* 2-Column Metric Cards */}
                 <View style={styles.metricsGrid}>
-                  <MetricCard label="Decay Risk" value="Low" valueColor={colors.primary} />
-                  <MetricCard label="Carbon Capture" value="12.4t / yr" valueColor={colors.textPrimary} />
+                  <MetricCard label="Decay Risk" value="Low" valueColor={colors.green_vivid || '#2BB673'} />
+                  <MetricCard label="Carbon Capture" value="12.4t / yr" valueColor={colors.text_airy_primary || '#161d18'} />
                 </View>
 
-                {/* Recent Impact Actions */}
-                <View style={styles.recentSection}>
-                  <Text style={[styles.recentTitle, { color: colors.textPrimary }]}>Recent Impact Actions</Text>
-                  
-                  <View style={[styles.actionRow, { backgroundColor: colors.surfaceSecondary, borderRadius: radii.xl }]}>
-                    <View style={[styles.actionIconBg, { backgroundColor: colors.primarySubtle }]}>
-                      <Ionicons name="bug" size={18} color={colors.primary} />
+                {activeRaids.length > 0 && (
+                  <View style={styles.recentSection}>
+                    <View style={styles.sectionHeaderRow}>
+                      <Text style={[styles.recentTitle, { color: colors.text_on_warm_primary }]}>Active Clean Raids</Text>
+                      <Text style={[styles.raidCountBadge, { color: colors.green_vivid || '#2BB673' }]}>
+                        {activeRaids.length} Active
+                      </Text>
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>Arjun logged a Monarch</Text>
-                      <Text style={[styles.actionSub, { color: colors.textSecondary }]}>Biodiversity Action • 2m ago</Text>
-                    </View>
-                    <StatusBadge label="+12 XP" variant="success" />
+                    {activeRaids.map((raid) => (
+                      <TouchableOpacity
+                        key={raid.id}
+                        style={[
+                          styles.actionRow,
+                          {
+                            backgroundColor: colors.card_warm_soft || '#FFFDF9',
+                            borderRadius: radii.lg || 20,
+                            borderWidth: 1,
+                            borderColor: 'rgba(232, 169, 32, 0.25)',
+                          },
+                        ]}
+                        onPress={() => navigation.navigate('RaidDetail', { raidId: raid.id })}
+                        activeOpacity={0.8}
+                      >
+                        <View style={[styles.actionIconBg, { backgroundColor: colors.amber_subtle || 'rgba(232, 169, 32, 0.15)', borderRadius: 20 }]}>
+                          <Ionicons name="shield-checkmark" size={20} color={colors.amber || '#E8A920'} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.actionTitle, { color: colors.text_on_warm_primary }]}>{raid.title}</Text>
+                          <Text style={[styles.actionSub, { color: colors.text_on_warm_secondary }]}>
+                            Group Cleanup • {raid.participant_count || 0} Joined
+                          </Text>
+                        </View>
+                        <StatusBadge label="Details" variant="warning" />
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                </View>
+                )}
 
-                {/* RPC Boost Button */}
                 <TouchableOpacity
-                  style={[styles.boostBtn, { backgroundColor: colors.accentGoldSubtle, borderColor: 'rgba(245, 158, 11, 0.3)' }]}
+                  style={[
+                    styles.boostBtn,
+                    {
+                      backgroundColor: colors.green_glow || 'rgba(43, 182, 115, 0.15)',
+                      borderColor: colors.green_vivid || '#2BB673',
+                      borderWidth: 1.5,
+                      borderRadius: radii.pill || 9999,
+                    },
+                  ]}
                   onPress={handleTestScoreBoost}
                   disabled={boosting}
+                  activeOpacity={0.8}
                 >
                   {boosting ? (
-                    <ActivityIndicator size="small" color={colors.accentGold} />
+                    <ActivityIndicator size="small" color={colors.green_vivid || '#2BB673'} />
                   ) : (
                     <>
-                      <Ionicons name="flash" size={16} color={colors.accentGold} />
-                      <Text style={[styles.boostText, { color: colors.accentGold }]}>Test RPC Boost (+5 Score)</Text>
+                      <Ionicons name="flash" size={17} color={colors.green_vivid || '#2BB673'} />
+                      <Text style={[styles.boostText, { color: colors.green_vivid || '#2BB673' }]}>
+                        Test RPC Boost (+5 Score)
+                      </Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -571,61 +863,43 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
-    backgroundColor: '#F4F7F5',
+    backgroundColor: '#142217',
   },
-  floatingControls: {
+  floatingTopBar: {
     position: 'absolute',
-    top: 12,
+    top: 0,
     left: 16,
     right: 16,
     gap: 10,
-    alignItems: 'center',
     zIndex: 20,
   },
-  globalHealthPill: {
+  glassBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
-  },
-  globalHealthText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  filterRow: {
-    flexDirection: 'row',
-    padding: 4,
-    borderRadius: 24,
-    gap: 4,
-  },
-  chipItem: {
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 10,
+    borderRadius: 9999,
+    gap: 12,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    height: 46,
-    borderRadius: 23,
-    paddingHorizontal: 16,
-    gap: 10,
+  territoryName: {
+    fontSize: 16,
+    fontWeight: '700',
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
+  territorySub: {
+    fontSize: 12,
+  },
+  filterChipScroll: {
+    gap: 8,
+    paddingVertical: 4,
   },
   bottomSheetWrapper: {
     position: 'absolute',
-    bottom: 65,
     left: 0,
     right: 0,
     zIndex: 50,
   },
   bottomSheetContainer: {
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   sheetHeaderTouch: {
     flexDirection: 'row',
@@ -634,8 +908,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   sheetTitle: {
-    fontSize: 19,
-    fontWeight: '800',
+    fontSize: 18,
+    fontWeight: '700',
   },
   statusRow: {
     flexDirection: 'row',
@@ -650,22 +924,19 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '700',
-  },
-  expandHint: {
-    fontSize: 11,
-    marginLeft: 4,
+    fontWeight: '600',
   },
   scoreCol: {
     alignItems: 'center',
     gap: 2,
   },
   scoreNumber: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '700',
   },
   expandedContent: {
     marginTop: 8,
+    paddingBottom: 20,
     gap: 12,
   },
   metricsGrid: {
@@ -673,44 +944,54 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   recentSection: {
-    gap: 6,
+    gap: 8,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   recentTitle: {
     fontSize: 13,
     fontWeight: '700',
   },
+  raidCountBadge: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    gap: 10,
+    padding: 12,
+    gap: 12,
   },
   actionIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },
   actionTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
   },
   actionSub: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 1,
   },
   boostBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 36,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 6,
+    paddingVertical: 13,
+    borderRadius: 9999,
+    gap: 8,
+    marginTop: 6,
+    marginBottom: 4,
   },
   boostText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
 });

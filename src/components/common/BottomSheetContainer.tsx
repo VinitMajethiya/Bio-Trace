@@ -15,9 +15,9 @@ export const BottomSheetContainer: React.FC<BottomSheetContainerProps> = ({ chil
       style={[
         styles.sheet,
         {
-          backgroundColor: colors.surface,
-          borderTopLeftRadius: radii['2xl'],
-          borderTopRightRadius: radii['2xl'],
+          backgroundColor: colors.card_light || '#FFFFFF',
+          borderTopLeftRadius: radii.xl || 28,
+          borderTopRightRadius: radii.xl || 28,
           borderColor: colors.surfaceBorder,
         },
         shadows.overlay,
@@ -25,7 +25,7 @@ export const BottomSheetContainer: React.FC<BottomSheetContainerProps> = ({ chil
       ]}
     >
       <View style={styles.handleContainer}>
-        <View style={[styles.handle, { backgroundColor: colors.textMuted }]} />
+        <View style={[styles.handle, { backgroundColor: colors.text_on_dark_muted || '#4A6852' }]} />
       </View>
       {children}
     </View>

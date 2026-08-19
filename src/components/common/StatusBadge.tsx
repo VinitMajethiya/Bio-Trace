@@ -23,7 +23,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       case 'info':
         return { bg: colors.accentBlueSubtle, text: colors.accentBlue, border: 'transparent' };
       case 'warning':
-        return { bg: colors.accentGoldSubtle, text: colors.accentGold, border: 'transparent' };
+        return { bg: colors.warningSubtle || 'rgba(232, 169, 32, 0.15)', text: colors.warning || '#E8A920', border: 'transparent' };
       case 'module':
         return { bg: 'rgba(15, 23, 42, 0.65)', text: colors.textInverse, border: 'transparent' };
       case 'success':

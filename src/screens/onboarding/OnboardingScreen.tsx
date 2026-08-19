@@ -1,131 +1,160 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  SafeAreaView,
+  FlatList,
   Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../providers/ThemeProvider';
-import { BioCard } from '../../components/common/BioCard';
 import { PrimaryButton } from '../../components/common/PrimaryButton';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 
-const { width } = Dimensions.get('window');
+export const ONBOARDING_COMPLETED_KEY = '@has_completed_onboarding_v1';
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-export interface OnboardingSlide {
+interface OnboardingSlide {
   id: string;
   title: string;
   subtitle: string;
-  description: string;
   icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-  bgSubtle: string;
+  description: string;
 }
 
 const SLIDES: OnboardingSlide[] = [
   {
     id: 'slide-1',
-    title: 'Welcome to BioVerse',
-    subtitle: 'One score. Two ways to help it grow.',
-    description: 'Restore campus ecosystems by connecting wildlife biodiversity observation with local circular waste recycling.',
-    icon: 'earth',
-    color: '#059669',
-    bgSubtle: '#E6F4EA',
+    title: 'One Territory Score,\nTwo Ways to Help it Grow',
+    subtitle: 'WILD & CIRCULAR ECOSYSTEM',
+    icon: 'leaf-outline',
+    description:
+      'Log native bird species with AI species recognition or scan recyclables for campus locker pickups. Both actions directly boost your community Health Score!',
   },
   {
     id: 'slide-2',
-    title: 'Wild AI Identification',
-    subtitle: 'Snap & ID Birds & Wildlife',
-    description: 'Spot species in campus pilot zones to record GPS observations, earn Wild XP, and boost Ecosystem Health Score.',
-    icon: 'camera',
-    color: '#059669',
-    bgSubtle: '#E6F4EA',
+    title: 'Community Societies &\nCamera-Verified Bio Abhiyans',
+    subtitle: 'DEMOCRATIC GOVERNANCE',
+    icon: 'shield-checkmark-outline',
+    description:
+      'Join local neighborhood societies, vote in quarterly democratic elections for Bio Veers, and participate in camera-verified group Bio Abhiyans for bonus GreenPoints!',
   },
   {
     id: 'slide-3',
-    title: 'Circular Waste Marketplace',
-    subtitle: 'Scan & Upcycle Recyclables',
-    description: 'Log recyclable waste drop-offs at Smart Eco-Lockers to earn GreenPoints, cash payouts, and protect the territory.',
-    icon: 'sync-circle',
-    color: '#2563EB',
-    bgSubtle: '#EFF6FF',
+    title: 'Join Your Society &\nStart Your Eco Journey',
+    subtitle: 'LOCAL IMPACT',
+    icon: 'planet-outline',
+    description:
+      'Select your local society to view live territory health overlay maps, claim GreenPoints rewards, and upcycle waste with DIY community projects.',
   },
 ];
 
-interface OnboardingScreenProps {
-  onComplete: () => void;
-}
-
-export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
+export const OnboardingScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const { colors, radii } = useTheme();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { user } = useAuth();
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const flatListRef = useRef<FlatList>(null);
 
-  const currentSlide = SLIDES[currentIndex];
-  const isLastSlide = currentIndex === SLIDES.length - 1;
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
+      if (user?.id) {
+        await supabase.from('users').update({ onboarding_completed: true }).eq('id', user.id);
+      }
+    } catch (err) {
+      console.warn('[Onboarding] Error persisting completion flag:', err);
+    }
+    navigation.replace('AppStory');
+  };
+
+  const handleScroll = (event: any) => {
+    const slideSize = event.nativeEvent.layoutMeasurement.width;
+    const index = Math.round(event.nativeEvent.contentOffset.x / slideSize);
+    if (index !== currentIndex) {
+      setCurrentIndex(index);
+    }
+  };
 
   const handleNext = () => {
-    if (isLastSlide) {
-      onComplete();
+    if (currentIndex < SLIDES.length - 1) {
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      setCurrentIndex(prev => prev + 1);
+      completeOnboarding();
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Top Bar with Skip */}
-      <View style={styles.topBar}>
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity onPress={onComplete} style={styles.skipBtn} activeOpacity={0.7}>
-          <Text style={[styles.skipText, { color: colors.textSecondary }]}>Skip</Text>
+    <View style={[styles.container, { backgroundColor: colors.canvas_airy || '#f4fbf3', paddingTop: Math.max(insets.top, 16) }]}>
+      {/* Header Row */}
+      <View style={styles.headerRow}>
+        <View style={styles.brandRow}>
+          <Ionicons name="leaf" size={24} color={colors.green_vivid || '#2BB673'} />
+          <Text style={[styles.brandText, { color: colors.text_airy_primary || '#161d18' }]}>EcoQuest</Text>
+        </View>
+
+        <TouchableOpacity onPress={() => completeOnboarding()} activeOpacity={0.7} style={styles.skipBtn}>
+          <Text style={[styles.skipText, { color: colors.text_airy_muted || '#6d7a6f' }]}>Skip</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Main Slide Display */}
-      <View style={styles.slideContainer}>
-        <View style={[styles.iconWrapper, { backgroundColor: currentSlide.bgSubtle, borderColor: currentSlide.color }]}>
-          <Ionicons name={currentSlide.icon} size={64} color={currentSlide.color} />
+      {/* 3-Slide Pager */}
+      <FlatList
+        ref={flatListRef}
+        data={SLIDES}
+        keyExtractor={(item) => item.id}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        renderItem={({ item }) => (
+          <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
+            <View style={[styles.iconCircle, { backgroundColor: colors.mint_background || '#D9F3E9', borderColor: colors.outline_variant || '#BCCABD', borderWidth: 1.5 }]}>
+              <Ionicons name={item.icon} size={58} color={colors.green_vivid || '#2BB673'} />
+            </View>
+
+            <Text style={[styles.subtitle, { color: colors.green_vivid || '#2BB673' }]}>{item.subtitle}</Text>
+            <Text style={[styles.title, { color: colors.text_airy_primary || '#161d18' }]}>{item.title}</Text>
+            <Text style={[styles.description, { color: colors.text_airy_secondary || '#3d4a40' }]}>
+              {item.description}
+            </Text>
+          </View>
+        )}
+      />
+
+      {/* Footer Navigation */}
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <View style={styles.dotsRow}>
+          {SLIDES.map((_, idx) => (
+            <View
+              key={idx}
+              style={[
+                styles.dot,
+                {
+                  backgroundColor: idx === currentIndex ? (colors.green_vivid || '#2BB673') : (colors.outline_variant || '#BCCABD'),
+                  width: idx === currentIndex ? 28 : 8,
+                  opacity: idx === currentIndex ? 1.0 : 0.5,
+                },
+              ]}
+            />
+          ))}
         </View>
 
-        <View style={styles.textGroup}>
-          <Text style={[styles.slideTitle, { color: colors.textPrimary }]}>{currentSlide.title}</Text>
-          <Text style={[styles.slideSubtitle, { color: currentSlide.color }]}>{currentSlide.subtitle}</Text>
-          <Text style={[styles.slideDesc, { color: colors.textSecondary }]}>{currentSlide.description}</Text>
-        </View>
-      </View>
-
-      {/* Pagination & Footer Controls */}
-      <View style={styles.footer}>
-        {/* Step Indicator Dots */}
-        <View style={styles.paginationRow}>
-          {SLIDES.map((slide, idx) => {
-            const isActive = idx === currentIndex;
-            return (
-              <View
-                key={slide.id}
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor: isActive ? currentSlide.color : colors.surfaceBorder,
-                    width: isActive ? 24 : 8,
-                  },
-                ]}
-              />
-            );
-          })}
-        </View>
-
-        {/* Primary Action Button */}
         <PrimaryButton
-          title={isLastSlide ? 'Get Started' : 'Next'}
-          icon={isLastSlide ? 'rocket-outline' : 'arrow-forward-outline'}
+          title={currentIndex === SLIDES.length - 1 ? 'Join Local Society & Start' : 'Next'}
+          icon={currentIndex === SLIDES.length - 1 ? 'arrow-forward' : 'chevron-forward'}
           onPress={handleNext}
-          style={styles.actionBtn}
+          style={{ width: '100%' }}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -134,71 +163,74 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
-  topBar: {
-    height: 48,
+  headerRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
-  skipBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  skipText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  slideContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    gap: 28,
-  },
-  iconWrapper: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textGroup: {
+  brandRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  slideTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    textAlign: 'center',
+  brandText: {
+    fontSize: 20,
+    fontWeight: '700',
   },
-  slideSubtitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    textAlign: 'center',
+  skipBtn: {
+    padding: 8,
   },
-  slideDesc: {
+  skipText: {
     fontSize: 14,
+    fontWeight: '600',
+  },
+  slide: {
+    paddingHorizontal: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
     textAlign: 'center',
-    lineHeight: 20,
-    marginTop: 4,
+    gap: 16,
+  },
+  iconCircle: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: 26,
+    lineHeight: 32,
+    fontWeight: '700',
+    textAlign: 'center',
+    letterSpacing: -0.4,
+  },
+  description: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    maxWidth: 320,
   },
   footer: {
     paddingHorizontal: 24,
-    paddingBottom: 32,
     gap: 20,
-    alignItems: 'center',
   },
-  paginationRow: {
+  dotsRow: {
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   dot: {
     height: 8,
     borderRadius: 4,
-  },
-  actionBtn: {
-    width: '100%',
   },
 });

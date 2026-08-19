@@ -2,15 +2,17 @@ import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../providers/ThemeProvider';
-import { BioCard } from './BioCard';
 import { PrimaryButton } from './PrimaryButton';
 
 interface EmptyStateProps {
   icon?: keyof typeof Ionicons.glyphMap;
   title: string;
-  description: string;
+  description?: string;
+  message?: string;
   actionTitle?: string;
   onActionPress?: () => void;
+  onRetry?: () => void;
+  canvas?: 'dark' | 'warm';
   style?: ViewStyle;
 }
 
@@ -18,54 +20,61 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon = 'leaf-outline',
   title,
   description,
+  message,
   actionTitle,
   onActionPress,
+  onRetry,
+  canvas = 'dark',
   style,
 }) => {
   const { colors } = useTheme();
 
-  return (
-    <BioCard variant="outlined" padding={24} style={[styles.card, style]}>
-      <View style={[styles.iconBg, { backgroundColor: colors.primarySubtle }]}>
-        <Ionicons name={icon} size={32} color={colors.primary} />
-      </View>
-      <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
-      <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>
+  const isDark = canvas === 'dark';
+  const bodyText = message || description || '';
 
-      {actionTitle && onActionPress && (
-        <PrimaryButton title={actionTitle} onPress={onActionPress} style={styles.actionBtn} />
+  const textColor = isDark ? colors.text_on_dark_primary || '#F0F7F1' : colors.text_on_warm_primary || '#142217';
+  const subColor = isDark ? colors.text_on_dark_secondary || '#8DB89A' : colors.text_on_warm_secondary || '#3E6B48';
+  const iconColor = isDark ? colors.text_on_dark_secondary || '#8DB89A' : colors.green_vivid || '#4CAF72';
+
+  const handlePress = onActionPress || onRetry;
+  const buttonLabel = actionTitle || (onRetry ? 'Try Again' : undefined);
+
+  return (
+    <View style={[styles.container, style]}>
+      <Ionicons name={icon} size={48} color={iconColor} style={styles.icon} />
+      <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+      {!!bodyText && <Text style={[styles.description, { color: subColor }]}>{bodyText}</Text>}
+
+      {buttonLabel && handlePress && (
+        <PrimaryButton title={buttonLabel} onPress={handlePress} style={styles.actionBtn} size="sm" />
       )}
-    </BioCard>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     alignItems: 'center',
     justifyContent: 'center',
-    textAlign: 'center',
+    padding: 24,
   },
-  iconBg: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+  icon: {
     marginBottom: 12,
   },
   title: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 6,
+    letterSpacing: -0.3,
   },
   description: {
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   actionBtn: {
     marginTop: 16,
-    width: '100%',
+    minWidth: 140,
   },
 });

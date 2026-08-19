@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EcoQuest - Circular Recycling Scanner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#161d18",
+                        "surface-dim": "#d5dcd4",
+                        "on-surface": "#161d18",
+                        "on-tertiary-container": "#6f0e21",
+                        "text-main": "#333333",
+                        "text-muted": "#888888",
+                        "surface-white": "#FFFFFF",
+                        "primary-fixed-dim": "#5cde97",
+                        "on-primary-container": "#004024",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#dde4dc",
+                        "on-primary-fixed-variant": "#00522f",
+                        "on-secondary-fixed": "#351000",
+                        "background": "#f4fbf3",
+                        "surface-bright": "#f4fbf3",
+                        "secondary-container": "#ff9967",
+                        "on-primary": "#ffffff",
+                        "outline": "#6d7a6f",
+                        "tertiary": "#a53845",
+                        "on-tertiary-fixed": "#40000c",
+                        "inverse-on-surface": "#ecf3ea",
+                        "on-secondary-container": "#773003",
+                        "primary-container": "#2bb673",
+                        "emerald": "#00A86B",
+                        "tertiary-container": "#f97883",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e9f0e7",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#ffb693",
+                        "on-secondary-fixed-variant": "#793104",
+                        "surface-container-high": "#e3eae2",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#ffdbcc",
+                        "surface-container-low": "#eef6ed",
+                        "forest-green": "#154212",
+                        "surface-tint": "#006d40",
+                        "tertiary-fixed": "#ffdada",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#006d40",
+                        "outline-variant": "#bccabd",
+                        "mint-background": "#D9F3E9",
+                        "secondary": "#97481b",
+                        "primary-fixed": "#7afbb1",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f4fbf3",
+                        "on-surface-variant": "#3d4a40",
+                        "inverse-primary": "#5cde97",
+                        "surface-variant": "#dde4dc",
+                        "on-tertiary-fixed-variant": "#85202f",
+                        "inverse-surface": "#2b322d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter-md": "16px",
+                        "pill-padding-x": "20px",
+                        "pill-padding-y": "12px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-xl": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["22px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "700" }],
+                        "display-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.mint-background');
+        }
+        .scanner-ring {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(43, 182, 115, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(43, 182, 115, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(43, 182, 115, 0); }
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-md min-h-screen pb-24 md:pb-0 pt-20 md:pt-24 relative overflow-x-hidden">
+<!-- Top Navigation (Mobile App Bar) -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-gutter-md bg-surface-container-low/80 dark:bg-surface-container-lowest/80 backdrop-blur-md rounded-full mx-container-padding mt-4 px-4 h-16 shadow-sm border-0 md:hidden">
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 rounded-full bg-surface-white flex items-center justify-center text-forest-green hover:opacity-80 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+</button>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-forest-green dark:text-primary-fixed">Scanner</h1>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full bg-surface-white flex items-center justify-center text-forest-green hover:opacity-80 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl">flash_on</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-md mx-auto w-full px-container-padding flex flex-col gap-section-gap pb-8 md:mt-12">
+<!-- Scanner Area -->
+<div class="relative w-full aspect-[4/5] bg-surface-white rounded-[32px] overflow-hidden shadow-[0_4px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center p-6 mt-4">
+<!-- Camera Viewfinder Placeholder -->
+<div class="absolute inset-0 w-full h-full">
+<img class="w-full h-full object-cover opacity-60" data-alt="A brightly lit, soft focus view through a phone camera lens showing a plastic water bottle held against a light green wall. The lighting is sunny and cheerful, with slight depth of field blurring the background. The mood is modern, eco-friendly, and optimistic, adhering to a sun-drenched serenity aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt8G4giuuf9aGQSdoAX37vrmf0wQ8ysA4s1J0WA8L7mv1l6__COwSkm9amcJ0xCgaSANlLWNb5OPzdJt9V7Ked5wtCbEXtq2r9G22SUYHWfcnUsOpjX13H7MC58ce5ync2nwS7dGQnWFw5G5TccjXuWmCa3pUY-3oiE0mYIaXzgo9HpkRy26lGNk08xS9oT13JypKXBI5kjZYfYU0f2Nawp265DUTUQ2L3BimhCZH0KliP5VltgKRSwA"/>
+</div>
+<!-- Overlay Elements -->
+<div class="relative z-10 flex flex-col items-center w-full h-full justify-between">
+<!-- Target Reticle -->
+<div class="flex-1 flex items-center justify-center w-full relative">
+<!-- Scanner Ring Animation -->
+<div class="absolute w-48 h-48 rounded-full border-2 border-emerald/50 scanner-ring"></div>
+<div class="absolute w-56 h-56 rounded-full border border-emerald/20 scanner-ring" style="animation-delay: 0.5s;"></div>
+<!-- Inner Focus Area -->
+<div class="w-32 h-32 border-2 border-dashed border-emerald rounded-full flex items-center justify-center bg-surface-white/20 backdrop-blur-sm relative z-20">
+<span class="material-symbols-outlined text-4xl text-emerald" style="font-variation-settings: 'FILL' 1;">recycling</span>
+</div>
+<!-- Scan Line -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-0.5 bg-emerald blur-[1px] animate-[ping_2s_ease-in-out_infinite]"></div>
+</div>
+<!-- Detection Result Pill -->
+<div class="bg-surface-white rounded-full px-6 py-3 shadow-sm flex items-center gap-3 w-full max-w-[280px] mb-4">
+<div class="w-8 h-8 rounded-full bg-mint-background flex items-center justify-center text-emerald">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted">Detected Material</span>
+<span class="font-title-md text-title-md text-on-background">PET Plastic</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-3 gap-4 w-full">
+<!-- Value Card -->
+<div class="bg-surface-white rounded-2xl p-4 flex flex-col items-center justify-center gap-2 shadow-[0_4px_40px_rgba(0,0,0,0.03)] hover:-translate-y-1 transition-transform">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-lg">monetization_on</span>
+</div>
+<div class="text-center">
+<div class="font-title-md text-title-md text-on-background">50 GP</div>
+<div class="font-label-sm text-label-sm text-text-muted">Value</div>
+</div>
+</div>
+<!-- Impact Card -->
+<div class="bg-surface-white rounded-2xl p-4 flex flex-col items-center justify-center gap-2 shadow-[0_4px_40px_rgba(0,0,0,0.03)] hover:-translate-y-1 transition-transform">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-emerald">
+<span class="material-symbols-outlined text-lg">eco</span>
+</div>
+<div class="text-center">
+<div class="font-title-md text-title-md text-on-background">+5 HS</div>
+<div class="font-label-sm text-label-sm text-text-muted">Impact</div>
+</div>
+</div>
+<!-- Confidence Card -->
+<div class="bg-surface-white rounded-2xl p-4 flex flex-col items-center justify-center gap-2 shadow-[0_4px_40px_rgba(0,0,0,0.03)] hover:-translate-y-1 transition-transform">
+<div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined text-lg">radar</span>
+</div>
+<div class="text-center">
+<div class="font-title-md text-title-md text-on-background">98%</div>
+<div class="font-label-sm text-label-sm text-text-muted">Confidence</div>
+</div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="w-full mt-4">
+<button class="w-full h-14 rounded-full bg-gradient-to-b from-emerald to-primary-container text-surface-white font-title-md text-title-md flex items-center justify-center gap-2 shadow-lg shadow-emerald/30 hover:opacity-90 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                COLLECT RESOURCE
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Hidden on Desktop) -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 bg-surface-white/90 dark:bg-surface-container-lowest/90 backdrop-blur-lg rounded-full mx-container-padding mb-6 h-20 shadow-md border-0 md:hidden">
+<a class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+</a>
+<a class="flex items-center justify-center bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-full p-4 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">recycling</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">backpack</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+</a>
+</nav>
+</body></html>

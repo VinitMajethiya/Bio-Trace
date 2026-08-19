@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Clan Territory Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-background": "#161d18",
+                      "surface-dim": "#d5dcd4",
+                      "on-surface": "#161d18",
+                      "on-tertiary-container": "#6f0e21",
+                      "text-main": "#333333",
+                      "text-muted": "#888888",
+                      "surface-white": "#FFFFFF",
+                      "primary-fixed-dim": "#5cde97",
+                      "on-primary-container": "#004024",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#dde4dc",
+                      "on-primary-fixed-variant": "#00522f",
+                      "on-secondary-fixed": "#351000",
+                      "background": "#f4fbf3",
+                      "surface-bright": "#f4fbf3",
+                      "secondary-container": "#ff9967",
+                      "on-primary": "#ffffff",
+                      "outline": "#6d7a6f",
+                      "tertiary": "#a53845",
+                      "on-tertiary-fixed": "#40000c",
+                      "inverse-on-surface": "#ecf3ea",
+                      "on-secondary-container": "#773003",
+                      "primary-container": "#2bb673",
+                      "emerald": "#00A86B",
+                      "tertiary-container": "#f97883",
+                      "tertiary-fixed-dim": "#ffb3b6",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#e9f0e7",
+                      "error": "#ba1a1a",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#ffb693",
+                      "on-secondary-fixed-variant": "#793104",
+                      "surface-container-high": "#e3eae2",
+                      "on-error": "#ffffff",
+                      "secondary-fixed": "#ffdbcc",
+                      "surface-container-low": "#eef6ed",
+                      "forest-green": "#154212",
+                      "surface-tint": "#006d40",
+                      "tertiary-fixed": "#ffdada",
+                      "on-primary-fixed": "#002110",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#006d40",
+                      "outline-variant": "#bccabd",
+                      "mint-background": "#D9F3E9",
+                      "secondary": "#97481b",
+                      "primary-fixed": "#7afbb1",
+                      "on-secondary": "#ffffff",
+                      "surface": "#f4fbf3",
+                      "on-surface-variant": "#3d4a40",
+                      "inverse-primary": "#5cde97",
+                      "surface-variant": "#dde4dc",
+                      "on-tertiary-fixed-variant": "#85202f",
+                      "inverse-surface": "#2b322d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter-md": "16px",
+                      "pill-padding-x": "20px",
+                      "pill-padding-y": "12px",
+                      "section-gap": "32px",
+                      "container-padding": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-xl": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "22px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-xl": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: #D9F3E9; /* mint-background */
+        }
+        .pill-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            margin: 24px;
+        }
+        .gradient-btn {
+            background: linear-gradient(180deg, #2BB673 0%, #00A86B 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-md pb-24 md:pb-0 pt-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-gutter-md bg-surface-container-low/80 dark:bg-surface-container-lowest/80 backdrop-blur-md rounded-full mx-container-padding mt-4 px-4 h-16 shadow-sm bg-surface-white/60 dark:bg-surface-container-highest/40 backdrop-blur-xl md:hidden">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-surface-white">
+<img class="w-full h-full object-cover" data-alt="A cute, cheerful 3D avatar of a young explorer wearing a bright yellow hat and green vest, set against a soft mint background. Playful, high-quality rendering." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVIo05m0zYlIL6VMZ2M4-_gLGKyR5buOw7Rn1g4ihewHCNCeCXLtsBOyeixBbMvi3lYtzTBKv-PMmwlalGQdWzeU5Q0qsoYnC8JmtOcvOl0XUjsbwVAetlu0wRHjGNcle3ucTAOSA8zbttMLqHcnD7iEHR3_g_-X0nh7Su8REg1F5xwNClkCt9CGXzbK5-aJtrXB_WEzSRQZZ-QrjQ7-4lryOCC78YXSLxA_CwvxWqL4qZwckQPIEt4g"/>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-forest-green dark:text-primary-fixed">EcoQuest</h1>
+</div>
+<div class="flex items-center">
+<span class="font-label-sm text-label-sm font-bold text-emerald dark:text-primary-fixed-dim bg-emerald/10 px-3 py-1 rounded-full">1,250 GP</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="max-w-md mx-auto md:max-w-4xl md:mt-24 md:grid md:grid-cols-12 md:gap-6">
+<!-- Mobile Header (Hidden on MD) -->
+<div class="md:hidden flex justify-between items-center px-container-padding mt-4 mb-2">
+<button class="w-10 h-10 rounded-full bg-surface-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-forest-green">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-forest-green">share</span>
+</button>
+</div>
+<!-- Hero & Stats (Col 1-8 on desktop) -->
+<div class="md:col-span-8">
+<div class="pill-card overflow-hidden mt-0 md:mt-6 relative">
+<div class="h-48 w-full relative">
+<img class="w-full h-full object-cover" data-alt="A vibrant, cheerful 3D illustration of a sun-drenched valley with stylized pine trees, small fluffy clouds, and a bright yellow sun rising over distant soft-edged mountains. The style is playful and high-contrast, similar to a modern stylized mobile game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6JaIePY7RzDNqpxAGBW52d5_6jnkta8X8P82LmNyXbrYK9Nd3k5kFLrBQmXYXS_hbQeel3dmeFFClvBOGf8kquZFOKmCWho6R77dI226WJfnmhLgZrIUw2sI7IjBprv7tudjX78ykz3XV4HIT0Iu2Geg4ReMiBuQXW90aGA4RyX5yQLRkmKxYcj9AGMcvylLcwh_7Cqn6zEJ1LnC_qaKl73sfB8iXvABif5JimU2kknn3Ee5xETT_ow"/>
+<!-- Clan Badge overlay -->
+<div class="absolute -bottom-8 left-6 w-20 h-20 rounded-full border-4 border-surface-white bg-mint-background flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-4xl text-emerald" style="font-variation-settings: 'FILL' 1;">wb_sunny</span>
+</div>
+</div>
+<div class="pt-12 px-6 pb-6">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-forest-green mb-1">The Sun-Seekers</h2>
+<p class="font-body-md text-body-md text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                                Western Valley Region
+                            </p>
+</div>
+<div class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-label-sm shadow-sm">
+                            Rank #4
+                        </div>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-6">
+<div class="bg-surface p-4 rounded-xl flex items-center gap-3 border border-surface-variant">
+<div class="w-10 h-10 rounded-full bg-emerald/20 flex items-center justify-center text-emerald">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">landscape</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Territory</p>
+<p class="font-title-md text-title-md text-forest-green">450 km²</p>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-xl flex items-center gap-3 border border-surface-variant">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Restoration</p>
+<p class="font-title-md text-title-md text-forest-green">8,420 pts</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Territory Map Preview -->
+<div class="pill-card p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-title-md text-title-md text-forest-green">Territory Map</h3>
+<button class="text-emerald font-label-sm text-label-sm hover:opacity-80 transition-opacity">Expand</button>
+</div>
+<div class="h-40 rounded-xl overflow-hidden relative">
+<div class="w-full h-full bg-cover bg-center" data-alt="A clean, stylized vector map showing a fictional green valley region. The map has soft mint and light grey tones, dotted with bright green zones indicating controlled territory, and small playful pins for active restoration projects." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDof9EE9F3FVhN4mJcrB-FOiQMtdX_45xg6SPLt8jfgGb0waKpiKIwDcINHq3rX36Jrz7zQ--zpidlSv0BkMHiP7MafBdSSY6KWwIrkjm8lkuSgAc8UTUI2sDg8gqHrzudANtrzGDuWoK1SU-yNdU4_imrgl4hSOx86QDgkPQZnai-SGCgOagyZIML5RPcokXEEe1xkZ_rJe5Kl-MriC4mspVFU3BHZ0mAfDNUu8gInWMbomPBrqAmPQA')"></div>
+<!-- Overlay markers -->
+<div class="absolute top-1/2 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface-white shadow-md flex items-center justify-center animate-bounce">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">flag</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar: Members & Leaderboard (Col 9-12 on desktop) -->
+<div class="md:col-span-4">
+<!-- Regional Leaderboard Snippet -->
+<div class="pill-card p-6 mt-0 md:mt-6">
+<h3 class="font-title-md text-title-md text-forest-green mb-4">Regional League</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface">
+<div class="flex items-center gap-3">
+<span class="font-title-md text-title-md text-text-muted w-4">3</span>
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-sm text-forest-green">water_drop</span>
+</div>
+<span class="font-body-md text-body-md text-on-background font-medium">River Keepers</span>
+</div>
+<span class="font-label-sm text-label-sm text-emerald">8.9k</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-mint-background border border-emerald/20 shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald"></div>
+<div class="flex items-center gap-3 pl-2">
+<span class="font-title-md text-title-md text-forest-green w-4">4</span>
+<div class="w-8 h-8 rounded-full bg-surface-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-sm text-emerald" style="font-variation-settings: 'FILL' 1;">wb_sunny</span>
+</div>
+<span class="font-body-md text-body-md text-forest-green font-bold">Sun-Seekers</span>
+</div>
+<span class="font-label-sm text-label-sm text-emerald font-bold">8.4k</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface">
+<div class="flex items-center gap-3">
+<span class="font-title-md text-title-md text-text-muted w-4">5</span>
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-sm text-forest-green">park</span>
+</div>
+<span class="font-body-md text-body-md text-on-background font-medium">Oak Wardens</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted">7.2k</span>
+</div>
+</div>
+<button class="w-full mt-4 py-2 font-label-sm text-label-sm text-emerald border border-emerald/30 rounded-full hover:bg-emerald/5 transition-colors">View Full League</button>
+</div>
+<!-- Members List -->
+<div class="pill-card p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-title-md text-title-md text-forest-green">Members (12)</h3>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="3D avatar of a female character with pink hair and a green bandana, smiling, mint background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKU-wHw8zQk7r4ePM2L_s6EWWG5LtMj55EtVGswzLkSUcAn6H4Ebj6ck4baFWbamEe8e0HlEejypLzc2yQYXK8cLM4EkMzHyX9BummwFMoOVtQw8aoUX1xlM7ETg59eiVfW9j8sJATq4ZMUYa1034e0rddl2619Q9hviigmpknLCjGW8L-2WpOjKI56xBZbiht7KUDczX4q2BG98vAJdUR_xo55d1x4RY5bGGiti9k7Jy9OKKsSGBEDg"/>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md font-semibold text-on-background">Mia</p>
+<p class="font-label-sm text-label-sm text-text-muted">Clan Leader</p>
+</div>
+<div class="bg-surface-variant px-2 py-1 rounded-md">
+<span class="font-label-sm text-label-sm text-forest-green">Lvl 42</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="3D avatar of a male character with short brown hair and glasses, looking cheerful, mint background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRAJgdMZGcPNHK-FU8pK-RbJrbaGeqcWiFlnDRlgs2lG0TUwKb6MmZWBTrMDnxGzYflupDsy00jmrQNH1hRJJypz8bPSTfG2_lCmlJ44xQCfMNkcZtYw41tUopCM3HdTQs1_VduCksAE_kCBupagdAObL7QtEZhu0zmbtwO_qZyypgdBOmnnrvU7SeOZB8Ga-MWMxQq2AOgpwNfukr-PHYd8E3b-q3HaDpPM-19lPVvBPvnt7Tln_kSg"/>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md font-medium text-on-background">Jeremy Z.</p>
+<p class="font-label-sm text-label-sm text-text-muted">Elder</p>
+</div>
+<div class="bg-surface-variant px-2 py-1 rounded-md">
+<span class="font-label-sm text-label-sm text-forest-green">Lvl 38</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="3D avatar of a character wearing a blue cap, smiling broadly, mint background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwOjkqLSV3VYbSyCXlyzaobFJhoooUvOrbRsdDYmCPIMHldmp9LmjEjSsp-XJS2G36prR8KQiNzSGNaw77PGhhdHUvrDvbnGmN0QSJFps_VfhrFfC_armEYDQO-4ybtU6YwM6cwqJN_fF_t5LwkJBFSdUqJb9UVo0dNoEagRVwQcwi5J8-QCMLXc4nKJ-8tCP8m1Aw50hZcmi3h5j1fBTFr-tyUJpQeFg9EsYfoGEv1MPbOMnZiNhHwA"/>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md font-medium text-on-background">Alex K.</p>
+<p class="font-label-sm text-label-sm text-text-muted">Member</p>
+</div>
+<div class="bg-surface-variant px-2 py-1 rounded-md">
+<span class="font-label-sm text-label-sm text-forest-green">Lvl 21</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 mb-8 md:mb-0">
+<button class="w-full gradient-btn rounded-full py-4 font-title-md text-title-md shadow-md hover:opacity-90 active:scale-95 transition-all">Join Clan</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 bg-surface-white/90 dark:bg-surface-container-lowest/90 backdrop-blur-lg rounded-full mx-container-padding mb-6 h-20 shadow-md bg-surface-white/80 dark:bg-surface-container-highest/60 backdrop-blur-2xl">
+<a class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+</a>
+<a class="flex items-center justify-center bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-full p-4 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search_check</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">recycling</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">backpack</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant dark:text-outline-variant p-4 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+</a>
+</nav>
+</body></html>

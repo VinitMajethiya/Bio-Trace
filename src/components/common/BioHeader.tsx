@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../providers/ThemeProvider';
+import { useNavigation } from '@react-navigation/native';
+import { IconButton } from './IconButton';
 
 interface BioHeaderProps {
   avatarUrl?: string;
@@ -10,6 +12,9 @@ interface BioHeaderProps {
   onNotificationPress?: () => void;
   onAvatarPress?: () => void;
   hasNotification?: boolean;
+  showBack?: boolean;
+  onBackPress?: () => void;
+  showInfoBtn?: boolean;
 }
 
 export const BioHeader: React.FC<BioHeaderProps> = ({
@@ -19,27 +24,37 @@ export const BioHeader: React.FC<BioHeaderProps> = ({
   onNotificationPress,
   onAvatarPress,
   hasNotification = true,
+  showBack = false,
+  onBackPress,
+  showInfoBtn = true,
 }) => {
-  const { colors, typography, spacing, radii } = useTheme();
+  const { colors, radii } = useTheme();
+  const navigation = useNavigation<any>();
 
   return (
     <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.surfaceBorder }]}>
-      <TouchableOpacity style={styles.avatarBtn} onPress={onAvatarPress} activeOpacity={0.8}>
-        {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={[styles.avatarImg, { borderRadius: radii.pill }]} />
-        ) : (
-          <View style={[styles.avatarFallback, { backgroundColor: colors.primarySubtle, borderRadius: radii.pill }]}>
-            <Text style={[styles.avatarText, { color: colors.primaryDark }]}>{userInitial.toUpperCase()}</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      {showBack ? (
+        <IconButton icon="arrow-back" onPress={onBackPress} />
+      ) : (
+        <TouchableOpacity style={styles.avatarBtn} onPress={onAvatarPress} activeOpacity={0.8}>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={[styles.avatarImg, { borderRadius: radii.pill }]} />
+          ) : (
+            <View style={[styles.avatarFallback, { backgroundColor: colors.primarySubtle, borderRadius: radii.pill }]}>
+              <Text style={[styles.avatarText, { color: colors.primaryDark }]}>{userInitial.toUpperCase()}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )}
 
-      <Text style={[styles.title, { color: colors.primaryDark }]}>{title}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Text style={[styles.title, { color: colors.forest_green || colors.primaryDark }]}>{title}</Text>
+      </View>
 
-      <TouchableOpacity style={styles.iconBtn} onPress={onNotificationPress} activeOpacity={0.7}>
-        <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
+      <View style={styles.notifWrapper}>
+        <IconButton icon="notifications-outline" onPress={onNotificationPress} />
         {hasNotification && <View style={[styles.notifDot, { backgroundColor: colors.textDanger }]} />}
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -76,6 +91,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.3,
   },
+  notifWrapper: {
+    position: 'relative',
+  },
   iconBtn: {
     width: 38,
     height: 38,
@@ -85,8 +103,8 @@ const styles = StyleSheet.create({
   },
   notifDot: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 4,
+    right: 4,
     width: 7,
     height: 7,
     borderRadius: 4,
